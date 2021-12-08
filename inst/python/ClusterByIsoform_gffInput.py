@@ -1,0 +1,888 @@
+import sys
+import pandas as pd
+import gzip
+import os.path
+from os import path
+import time
+import re
+
+print(time.ctime())
+
+# Step 1 - Manage arguments and check for errors
+print("Step 1 - Managing command line arguments")
+
+annotationFile = sys.argv[1]
+if not path.exists(sys.argv[1]):
+    print("ERROR: ", sys.argv[1], " does not exist.")
+
+allReadsGffFile = sys.argv[2]
+if not path.exists(sys.argv[2]):
+    print("ERROR: ", sys.argv[2], " does not exist.")
+
+allReadsVSGenesFile = sys.argv[3]
+if not path.exists(sys.argv[3]):
+    print("ERROR: ", sys.argv[3], " does not exist.")
+
+cellTypeFile = sys.argv[4]
+if not path.exists(sys.argv[4]):
+    print("ERROR: ", sys.argv[4], " does not exist.")
+
+gene = sys.argv[5]
+
+CI = sys.argv[6]
+
+outputDir = sys.argv[7]
+geneOutputDir = outputDir + gene
+
+if len(sys.argv) > 8:
+    mismatchFile = sys.argv[8]
+    if not path.exists(sys.argv[8]):
+        print("ERROR: ", sys.argv[8], " does not exist.")
+else:
+    mismatchFile = None
+
+print(time.ctime())
+
+# Step 2 - Organize data
+# Step 2a - Get annotation for the gene
+print("Step 2 - Getting annotation for", gene)
+annoFile = gzip.open(annotationFile, "rb")
+
+#geneMatch = "\\b" + gene + "\\b"
+annoContents = []
+for line in annoFile:
+    # Decode data from gzipped version
+    line = line.decode()
+    columns = line.rstrip().split()
+    for i in range(9, len(columns)):
+	# First filter for match in column 3 for "exon" or "CDS", then filter
+	#     the matched row for the gene of interest. If match, append row
+	#     to array
+        if "exon" in columns[2] or "CDS" in columns[2]:
+            if "gene_name" in columns[i] and gene in columns[i+1]:#len(re.findall(geneMatch, columns[i+1])) > 0:
+                annoContents.append(columns)
+
+annoFile.close()
+
+# Create output file path
+outputAnnoGTFFile = gene + ".anno.gtf.gz"
+outputPath1 = geneOutputDir + "/" + outputAnnoGTFFile
+annoOutput = gzip.open(outputPath1, "w")
+
+# Write to output file and encode for gzipping
+for i in annoContents:
+    for element in i:
+        annoOutput.write(str(element).encode())
+        annoOutput.write("\t".encode())
+    annoOutput.write("\n".encode())
+
+annoOutput.close()
+
+print(time.ctime())
+
+
+# Get start, end, chromosome and strand for the gene
+print("Step 3 - Getting start, end, chromosome and strand for", gene, "gene")
+minimum = 1000000000
+maximum = -1
+
+# Find start (minimum) and end (maximum) of all reads for the gene of interest
+for i in annoContents:
+    if int(i[3]) < minimum:
+        minimum = int(i[3])
+    if int(i[4]) > maximum:
+        maximum = int(i[4])
+
+chromosome = annoContents[0][0]
+
+strand = annoContents[0][6]
+
+print(chromosome, " : ", minimum, "-", maximum, " : ", strand)
+print(time.ctime())
+
+
+# Get all reads from all datasets
+print("Step 4 - Getting all reads from all datasets")
+
+## Grab geneID for the reads. This step assumes same geneID for all rows in
+##     annoContents array
+for i in range(len(annoContents[0])):
+    if "gene_id" in annoContents[0][i]:
+        geneID = annoContents[0][i+1].strip("\";")
+
+# Get all read IDs of reads from the ReadsVSGenes file where geneID matches
+IDs = []
+with gzip.open(allReadsVSGenesFile, 'rt', encoding = 'utf-8') as allRVG:
+    for line in allRVG:
+        columns = line.strip("\n").split()
+        if geneID in columns[1]:
+            IDs.append(columns[0])
+#allRVG = [read.strip('\n') for read in gzip.open(allReadsVSGenesFile, 'rt', encoding = 'utf-8').readlines()]
+#allReads = [read.strip('\n') for read in gzip.open(allReadsGffFile, 'rt', encoding = 'utf-8').readlines()]
+
+
+#IDs = [] 
+#for line in allRVG:
+#    columns = line.strip().split()
+#    if geneID in columns[1]:
+#        IDs.append(columns[0])
+
+for ID in IDs:
+    ID = "\"" + ID + "\";"
+
+# For each read in the gff file where the read ID matches IDs already sorted
+#     by the last step, append these to a new array
+allReadsDict = {}
+with gzip.open(allReadsGffFile, 'rt', encoding = 'utf-8') as allReads:
+    for read in allReads:
+        columns = read.strip("\n").split()
+        if columns[9] in IDs and columns[9] in allReadsDict:
+            allReadsDict[columns[9]].append(columns)
+        elif columns[9] in IDs and !(columns[9] in allReadsDict):
+            allReadsDict[columns[9]] = [columns]
+
+#geneIDMatchDict = {}
+#for ID in IDs:
+#    ID = "\"" + ID + "\";"
+#    geneIDMatchDict[ID] = allReadsDict.get(ID)
+
+geneIDMatch = []
+for key, val in allReadsDict.items():
+    for i in val:
+        geneIDMatch.append(i)
+
+# Create output file path
+outputSpanningRegion = gene + ".all5DatasetsSpanningRegion.gff.gz"
+outputPath2 = geneOutputDir + "/" + outputSpanningRegion
+spanningRegionOutput = gzip.open(outputPath2, "w")
+
+# Write to output file and encode for gzipping
+for line in range(0,len(geneIDMatch)):#List:
+    for element in geneIDMatch[line]:
+        spanningRegionOutput.write(str(element).encode())
+        spanningRegionOutput.write("\t".encode())
+    spanningRegionOutput.write("\n".encode())
+
+spanningRegionOutput.close()
+
+print(time.ctime())
+
+
+# Order by isoform
+print("Step 5 - Ordering by isoform")
+struc = []
+intSt = []
+info = ""
+
+# Gather information for all reads with the same read ID which were sorted into
+#     geneIDMatch in Step 4
+for line in geneIDMatch:
+    line[9] = str(line[9]).split("\"")
+    ID = line[9][1]
+    
+    # intSt will be empty to begin so first read will go to else function. If this
+    #     ID already exists in intSt, then the info variable will add the read
+    #     information associated with this ID
+    if ID in intSt:
+        end = int(line[3]) - 1
+        info = info + ";%;" + line[0] + "_" + str(start) + "_" + str(end) + "_" + line[6]
+        start = int(line[4]) + 1
+    # if ID not found in intSt and intSt is not empty, append info to it, append
+    #     that to struc then empty both intSt and info to restart for new read ID
+    else:
+        if len(intSt) != 0:
+            intSt.append(info)
+            struc.append(intSt)
+            intSt = []
+            info = ""
+        intSt.append(ID) 
+        start = int(line[4]) + 1
+# Ensure last read ID is also appended to final array
+intSt.append(info)
+struc.append(intSt)
+
+def myFunc(e):
+    return e[1]
+struc.sort(key=myFunc)
+
+# Create output file path
+outputOrderFile = gene + ".order.tab.gz"
+outputPath3 = geneOutputDir + "/" + outputOrderFile
+orderOutput = gzip.open(outputPath3, "w")
+
+# Write struc to output file
+for line in struc:
+    for element in line:
+        orderOutput.write(str(element).encode())
+        orderOutput.write("\t".encode())
+    orderOutput.write("\n".encode())
+
+orderOutput.close()
+
+print(time.ctime())
+
+
+# Make projection
+print("Step 6 - Making projection")
+
+# Find start (minimum) and end (maximum) for all reads sorted from Step 4
+for i in geneIDMatch:
+#    columns = i.strip().split()
+    if int(i[3]) < minimum:  
+        minimum = int(i[3])
+    if int(i[4]) > maximum:
+        maximum = int(i[4])
+
+mini = 1000000000
+maxi = 0
+p = [None] * (maximum + 1)
+h = ["exonic", "intronic"]
+proj = []
+projection = []
+element = 0
+for i in annoContents:
+    if "exon" in i[2] or "cDNA_match" in i[2]:
+        mini = min(mini, int(i[3]))
+        maxi = max(maxi, int(i[4]))
+	# p is filled with 0's for all elements which fall within the start and
+	#     end points of the exons
+        for j in range(int(i[3]), int(i[4]) + 1):
+            p[j] = 0
+
+for i in geneIDMatch:
+#    columns = i.strip().split()
+    if "exon" in i[2] or "cDNA_match" in i[2]:
+        mini = min(mini, int(i[3]))
+        maxi = max(maxi, int(i[4]))
+	# p is filled with 0's for all elements which fall within the start and
+	#     end points of the exons
+        for j in range(int(i[3]), int(i[4]) + 1):
+            p[j] = 0
+
+# p is filled with 1's for all elements which fall outside of the start and end
+#     points of the exons
+for k in range(mini, maxi + 1):
+    if p[k] == None:
+        p[k] = 1
+    lastStart = mini
+
+# proj builds the array which becomes an element of final projection array.
+#     h simply tells you whether the read is intronic or exonic
+for m in range(mini + 1, maxi + 1):
+    if p[m] != p[m-1]:
+        x = m - 1
+        proj = [chromosome, lastStart, x, h[p[m-1]]]
+        projection.append(proj)
+        lastStart = m 
+
+# Make sure that the last read is recorded in the final array
+proj = [chromosome, lastStart, maxi, h[p[maxi-1]]]
+projection.append(proj)
+
+# Create output file path
+outputProjFile = gene + ".projection.tab.gz"
+outputPath4 = geneOutputDir + "/" + outputProjFile
+projOutput = gzip.open(outputPath4, "w")
+
+# Write to output file
+for line in projection:
+    for element in line:
+        projOutput.write(str(element).encode())
+        projOutput.write("\t".encode())
+    projOutput.write("\n".encode())
+
+projOutput.close()
+
+print(time.ctime())
+
+
+# Remap projection to new coordinates
+print("Step 7 - Remapping projection to new coordinates")
+
+mini = 0
+maxi = 0
+remap = []
+
+# Converts the old start and end coordinates of exons to relative coordinates
+# in a smaller range
+for line in projection:
+    if "exonic" in line[3]:
+        mini = maxi + 1
+        maxi = mini + (int(line[2]) - int(line[1]) + 1) - 1
+        line.append(str(mini))
+        line.append(str(maxi))
+        remap.append(line)
+
+# Makes all introns 100 points long on new range
+    if "intronic" in line[3]:
+        mini = maxi + 1
+        maxi = mini + 99
+        line.append(str(mini))
+        line.append(str(maxi))
+        remap.append(line)
+
+# Create output file path
+remapFile = gene + ".projection.tab.remap.gz"
+outputPath5 = geneOutputDir + "/" + remapFile
+remapOutput = gzip.open(outputPath5, "w")
+
+# Write to output file
+for line in remap:
+    for element in line:
+        remapOutput.write(str(element).encode())
+        remapOutput.write("\t".encode())
+    remapOutput.write("\n".encode())
+
+remapOutput.close()
+
+print(time.ctime())
+
+
+# Remap reads to new coordinates
+print("Step 8 - Remapping reads to new coordinates")
+
+cellType = open(cellTypeFile, "rb")
+
+cellTypeReads = []
+# Runs for each specified cellType
+for cType in cellType:
+    readRemap = []
+    cType = cType.decode()
+    cType = cType.split()
+    
+    # Search for cellType matches throughout geneIDMatch array
+    for line in geneIDMatch:
+        ID = line[9][1]
+        if cType[0] in ID:
+            for i in remap:
+		# Only interested in exonic sections
+                if "exonic" in i[3]:
+		    # If read does not fall within the start and end of an exonic section, move on
+                    if int(line[3]) < int(i[1]) or int(line[4]) > int(i[2]):
+                        continue
+                    else:
+			# If read falls within exonic section, recalc start and end point, and append to new readRemap
+                        remapRead = []
+                        remapRead.append(line[0])
+                        remapRead.append(line[1])
+                        remapRead.append(line[2])
+                        x = int(line[3]) - int(i[1])
+                        y = int(i[2]) - int(line[4])
+                        staDis = int(i[4]) + x
+                        endDis = int(i[5]) - y
+                        remapRead.append(staDis)
+                        remapRead.append(endDis)
+                        remapRead.append(line[5])
+                        remapRead.append(line[6])
+                        remapRead.append(line[7])
+                        remapRead.append(ID)
+                        readRemap.append(remapRead)
+
+    # Ensure naming convention works for a file. No "/" in cell type name
+    if "/" in cType[0]:
+        cType[0] = cType[0].replace("/", "_")
+    # Create output path for cell type specific remap file
+    remapReadFile = gene + "." + cType[0] + ".remap.gtf.gz"
+    outputPath6 = geneOutputDir + "/" + remapReadFile
+    remapReadOutput = gzip.open(outputPath6, "w")
+    
+    # Write to output file
+    for line in readRemap:
+        cellTypeReads.append(line)
+        for element in line:
+            remapReadOutput.write(str(element).encode())
+            remapReadOutput.write("\t".encode())
+        remapReadOutput.write("\n".encode())
+
+    remapReadOutput.close()
+
+cellType.close()
+
+print(time.ctime())
+
+
+# Find alternative exons
+print("Step 9 - Finding alternative exons")
+
+altExons = []
+exIncl = 0
+exTot = 0
+exonCount = {}
+internal = {}
+readStart = {}
+readEnd = {}
+countKeys = exonCount.keys()
+
+for line in cellTypeReads:
+    if line[8] in countKeys:
+        exonCount[line[8]].append(line[0] + "_" + str(line[3]) + "_" + str(line[4]) + "_" + line[6])
+    else:
+        exonCount[line[8]] = []
+        exonCount[line[8]].append(line[0] + "_" + str(line[3]) + "_" + str(line[4]) + "_" + line[6])
+
+for read in countKeys:
+    startInfo = 1000000000
+    endInfo = 0
+    length = len(exonCount[read])
+    for info in range(0,length):
+        data = exonCount[read][info].split("_")
+        if int(data[1]) < startInfo:
+            startInfo = int(data[1])
+        if int(data[2]) > endInfo:
+            endInfo = int(data[2])
+    readStart[read] = startInfo
+    readEnd[read] = endInfo
+
+    for i in range(1,length-1):
+        internal[exonCount[read][i]] = []
+
+intKeys = internal.keys()
+for exon in intKeys:
+    exIncl = 0
+    exTot = 0
+    data = exon.split("_")
+    
+    for read in countKeys:
+        length = len(exonCount[read])
+        if readStart[read] < int(data[1]) and readEnd[read] > int(data[2]):
+            exTot = exTot + 1
+        for i in range(1,length-1):
+            if exonCount[read][i] in exon:
+                exIncl = exIncl + 1
+
+    psi = exIncl/exTot
+    internal[exon].append(exIncl)
+    internal[exon].append(exTot)
+    internal[exon].append(psi)
+
+altExons = []
+for exon in intKeys:
+    if internal[exon][2] > float(CI) and internal[exon][2] < (1 - float(CI)):
+        altExons.append(exon)
+
+if len(altExons) < 1:
+    altExons.append(0)
+
+altExonFile = gene + ".altExons.tab"
+outputPath7 = geneOutputDir + "/" + altExonFile
+altExonOutput = open(outputPath7, "w")
+
+for exon in altExons:
+    altExonOutput.write(str(exon))
+    altExonOutput.write("\n")
+
+altExonOutput.close()
+
+print(time.ctime())
+
+
+# Remap geneIDMatch to new coordinates
+print("Step 10 - Remapping all5DatasetsSpanningRegion to the new coordinates.")
+geneIDRemap = []
+for line in geneIDMatch:
+    ID = line[9][1]
+    for i in remap:
+        if "exonic" in i[3]:
+            if int(line[3]) < int(i[1]) or int(line[4]) > int(i[2]):
+                continue
+            else:
+                remapGeneID = []
+                remapGeneID.append(line[0])
+                remapGeneID.append(line[1])
+                remapGeneID.append(line[2])
+                x = int(line[3]) - int(i[1])
+                y = int(i[2]) - int(line[4])
+                staDis = int(i[4]) + x
+                endDis = int(i[5]) - y
+                remapGeneID.append(staDis)
+                remapGeneID.append(endDis)
+                remapGeneID.append(line[5])
+                remapGeneID.append(line[6])
+                remapGeneID.append(line[7])
+                remapGeneID.append(line[8])
+                remapGeneID.append(ID)
+                geneIDRemap.append(remapGeneID)
+
+geneIDRemapFile = gene + ".all5DatasetsSpanningRegion.remap.gff.gz"
+outputPath8 = geneOutputDir + "/" + geneIDRemapFile
+geneIDRemapOutput = gzip.open(outputPath8, "w")
+
+for line in geneIDRemap:
+    for element in line:
+        geneIDRemapOutput.write(str(element).encode())
+        geneIDRemapOutput.write("\t".encode())
+    geneIDRemapOutput.write("\n".encode())
+
+geneIDRemapOutput.close()
+
+print(time.ctime())
+
+
+# Ordering remapped geneIDMatch by isoform
+print("Step 11 - Ordering remapped reads by isoform.")
+strucRemap = []
+intStRemap = []
+infoRemap = ""
+
+# Gather information for all reads with the same read ID which were sorted into
+#     geneIDRemap in Step 9
+for line in geneIDRemap:
+#    line[9] = str(line[9]).split("\"")
+    ID = line[9]#[1]
+
+    # intSt will be empty to begin so first read will go to else function. If this
+    #     ID already exists in intSt, then the info variable will add the read
+    #     information associated with this ID
+    if ID in intStRemap:
+        end = int(line[3]) - 1
+        infoRemap = infoRemap + ";%;" + line[0] + "_" + str(start) + "_" + str(end) + "_" + line[6]
+        start = int(line[4]) + 1
+    # if ID not found in intSt and intSt is not empty, append info to it, append
+    #     that to struc then empty both intSt and info to restart for new read ID
+    else:
+        if len(intStRemap) != 0:
+            intStRemap.append(infoRemap)
+            strucRemap.append(intStRemap)
+            intStRemap = []
+            infoRemap = ""
+        intStRemap.append(ID)
+        start = int(line[4]) + 1
+# Ensure last read ID is also appended to final array
+intStRemap.append(infoRemap)
+strucRemap.append(intStRemap)
+
+def myFunc(e):
+    return e[1]
+strucRemap.sort(key=myFunc)
+
+# Create output file path
+outputOrderRemapFile = gene + ".order.remap.tab.gz"
+outputPath9 = geneOutputDir + "/" + outputOrderRemapFile
+orderRemapOutput = gzip.open(outputPath9, "w")
+
+# Write struc to output file
+for line in strucRemap:
+    for element in line:
+        orderRemapOutput.write(str(element).encode())
+        orderRemapOutput.write("\t".encode())
+    orderRemapOutput.write("\n".encode())
+
+orderRemapOutput.close()
+
+print(time.ctime())
+
+
+# Remap annotation to new coordinates
+print("Step 12 - Remapping annotation to the new coordinates")
+
+annoRemap = []
+for line in annoContents:
+    line[9] = line[9].split("\"")
+    ID = line[9][1]
+    line[11] = line[11].split("\"")
+    transID = line[11][1]
+    for i in remap:
+        # Only worried about reads that fall within an exonic section of the gene
+        if "exonic" in i[3]:
+	    # Do not worry about reads that do not fall within these exonic sections
+            if int(line[3]) < int(i[1]) or int(line[4]) > int(i[2]):
+                continue
+	    # If they do, recalculate start and end of reads and append to annoRemap
+            else:
+                remapAnno = []
+                remapAnno.append(line[0])
+                remapAnno.append(line[1])
+                remapAnno.append(line[2])
+                x = int(line[3]) - int(i[1])
+                y = int(i[2]) - int(line[4])
+                staDis = int(i[4]) + x
+                endDis = int(i[5]) - y
+                remapAnno.append(staDis)
+                remapAnno.append(endDis)
+                remapAnno.append(line[5])
+                remapAnno.append(line[6])
+                remapAnno.append(line[7])
+                remapAnno.append(line[8])
+                remapAnno.append(ID)
+                remapAnno.append(line[10])
+                remapAnno.append(transID)
+                remapAnno.append("gene_name")
+                remapAnno.append(gene)
+                annoRemap.append(remapAnno)
+
+# Now we look for all transcript IDs and assign remapped coordinates to the
+#    first and last base associated with that transcript ID
+trans = [] 
+transRead = [None] * len(annoRemap[0])
+minimum = 10000000
+maximum = 0
+for read in annoRemap:
+    transID = read[11]
+    # Array starts as a list of "None" values. Ensure that you are working with a transID
+    if transRead[11] != None:
+	# If you are working with a transID, but have completed going through the associated reads
+	#    and are now seeing a read with a different transID, append what you have for the last
+	#    transID and reset values of transRead back to "None"
+        if transID not in transRead[11]:
+            trans.append(transRead)
+            transRead = [None] * len(annoRemap[0])
+            minimum = 10000000
+            maximum = 0
+        transRead[0] = read[0]
+        transRead[1] = read[1]
+        transRead[2] = "transcript"
+	# Assign minimum and maximum as you come across them for a specific transID
+        minimum = min(minimum, int(read[3]))
+        maximum = max(maximum, int(read[4]))
+        transRead[3] = minimum
+        transRead[4] = maximum
+        transRead[5] = read[5]
+        transRead[6] = read[6]
+        transRead[7] = "."
+        transRead[8] = read[8]
+        transRead[9] = read[9]
+        transRead[10] = read[10]
+        transRead[11] = transID
+        transRead[12] = read[12]
+        transRead[13] = read[13]
+    # This should only run on the first pass through the for loop
+    else:
+        transRead[0] = read[0]
+        transRead[1] = read[1]
+        transRead[2] = "transcript"
+        minimum = min(minimum, int(read[3]))
+        maximum = max(maximum, int(read[4]))
+        transRead[3] = minimum
+        transRead[4] = maximum
+        transRead[5] = read[5]
+        transRead[6] = read[6]
+        transRead[7] = "."
+        transRead[8] = read[8]
+        transRead[9] = read[9]
+        transRead[10] = read[10]
+        transRead[11] = transID
+        transRead[12] = read[12]
+        transRead[13] = read[13]
+
+trans.append(transRead)
+
+# Put the transcript ID information at the top of the annoRemap array
+for line in trans:
+    annoRemap.insert(0, line)
+
+# Create output path
+remapAnnoFile = gene + ".anno_remap.gtf.gz"
+outputPath10 = geneOutputDir + "/" + remapAnnoFile
+remapAnnoOutput = gzip.open(outputPath10, "w")
+
+# Write to output file
+for line in annoRemap:
+    for element in line:
+        remapAnnoOutput.write(str(element).encode())
+        remapAnnoOutput.write("\t".encode())
+    remapAnnoOutput.write("\n".encode())
+
+remapAnnoOutput.close()
+
+print(time.ctime())
+
+
+# Set variables for the plot
+print("Step 13 - Setting variables for the plot")
+
+cellType = open(cellTypeFile, "rb")
+
+# Format file for use in the R script
+plotData = []
+for line in cellType:
+    data = []
+    line = line.decode()
+    line = line.split()
+    data.append(line[0])
+    # Make sure for the file paths that the names with "/" are changed to "_"
+    if "/" in line[0]:
+        line[0] = line[0].replace("/", "_")
+    data.append(geneOutputDir + "/" + gene + "." + line[0] + ".remap.gtf.gz")
+    data.append(line[0] + " isoforms")
+    data.append(line[1])
+    plotData.append(data)
+
+# Create output path
+plotNamesFile = gene + ".cellTypeFileWithFileNames.tab"
+outputPath11 = geneOutputDir + "/" + plotNamesFile
+plotNamesOutput = open(outputPath11, "w")
+
+# Write to output file
+for line in plotData:
+    for element in line:
+        plotNamesOutput.write(str(element))
+        plotNamesOutput.write("\t")
+    plotNamesOutput.write("\n")
+
+plotNamesOutput.close()
+
+print(time.ctime())
+
+# Identify and remap SNVs, insertions, and deletions if option is chosen by user
+if mismatchFile != None:
+    print("Step 14 - Identifying and remapping SNVs, insertions, and deletions")
+    
+    # Read in mismatches file
+    mismatches = [read.strip('\n') for read in gzip.open(mismatchFile, 'rt', encoding = 'utf-8').readlines()]
+    
+    # Create dictionaries for each type of mismatch
+    SNVDict = {}
+    insertDict = {} 
+    delDict = {}
+    # Separate out data by mismatch type
+    for read in range(1,len(mismatches)):
+        infoSNV = mismatches[read].split("\t")
+        SNVDict[infoSNV[1]] = infoSNV[2]
+        insertDict[infoSNV[1]] = infoSNV[3]
+        delDict[infoSNV[1]] = infoSNV[4]
+    
+    # Organize SNVs by readID in dictionary
+    SNVDictList = {}
+    SNVKeys = SNVDict.keys()
+    for readID in SNVKeys:
+        # If SNV entry exists for the readID, then record each instance in the
+        # dictionary
+        if SNVDict[readID] != "NA":
+            allSNVs = []
+            readSNV = SNVDict[readID].split(';')
+            for i in readSNV:
+                SNV = i.split("_")
+                allSNVs.append(SNV[0])
+            SNVDictList[readID] = allSNVs
+    
+    # Organize insertions by readID in dictionary        
+    insertDictList = {}
+    insertKeys = insertDict.keys()
+    for insertID in SNVKeys:
+        # If SNV entry exists for the readID, then record each instance in the
+        # dictionary
+        if insertDict[insertID] != "NA":
+            allInserts = []
+            readInsert = insertDict[insertID].split(';')
+            for j in readInsert:
+                insert = j.split("_")
+                allInserts.append(insert[0])
+            insertDictList[insertID] = allInserts
+    
+    # Organize deletions by readID in dictionary            
+    delDictList = {}
+    delKeys = delDict.keys()
+    for delID in delKeys:
+        # If SNV entry exists for the readID, then record each instance in the
+        # dictionary
+        if delDict[delID] != "NA":
+            allDels = []
+            readDel = delDict[delID].split(';')
+            for k in readDel:
+                deletion = k.split("_")
+                allDels.append(deletion[0])
+            delDictList[delID] = allDels
+    
+    # Remap SNVs          
+    SNVList = {}
+    keysSNV = SNVDictList.keys()
+    for key in keysSNV:
+        snvRemap = []
+        for i in range(0, len(SNVDictList[key])):
+            # Comparing to the remapped projections table
+            for line in remap:
+                if "exonic" in line[3]:
+                    # Use exonic start and end to remap SNV positions
+                    if int(SNVDictList[key][i]) >= int(line[1]) and int(SNVDictList[key][i]) <= int(line[2]):
+                        diff = int(line[2]) - int(SNVDictList[key][i])
+                        remapSNV = int(line[5]) - diff
+                        snvRemap.append(remapSNV)
+        if len(snvRemap) > 0:
+            SNVList[key] = snvRemap
+    
+    # Remap insertions
+    insertList = {}
+    keysInsert = insertDictList.keys()
+    for key in keysInsert:
+        insertRemap = []
+        for i in range(0, len(insertDictList[key])):
+            # Comparing to the remapped projections table
+            for line in remap:
+                if "exonic" in line[3]:
+                    # Use exonic start and end to remap insertion positions
+                    if int(insertDictList[key][i]) >= int(line[1]) and int(insertDictList[key][i]) <= int(line[2]):
+                        diff = int(line[2]) - int(insertDictList[key][i])
+                        remapInsert = int(line[5]) - diff
+                        insertRemap.append(remapInsert)
+        if len(insertRemap) > 0:
+            insertList[key] = insertRemap
+    
+    #Remap deletions
+    delList = {}
+    keysDelete = delDictList.keys()
+    for key in keysDelete:
+        deleteRemap = []
+        for i in range(0, len(delDictList[key])):
+            # # Comparing to the remapped projections table
+            for line in remap:
+                if "exonic" in line[3]:
+                    # Use exonic start and end to remap deletion positions
+                    if int(delDictList[key][i]) >= int(line[1]) and int(delDictList[key][i]) <= int(line[2]):
+                        diff = int(line[2]) - int(delDictList[key][i])
+                        remapDelete = int(line[5]) - diff
+                        deleteRemap.append(remapDelete)
+        if len(deleteRemap) > 0:
+            delList[key] = deleteRemap
+    
+    # Create SNVs file path        
+    snvFile = gene + ".SNVs.tab"
+    outputPath12 = geneOutputDir + "/" + snvFile
+    snvOutput = open(outputPath12, "w")
+    
+    # Write SNVs to file by readID in dictionary
+    SNVk = SNVList.keys()
+    for key in SNVk:
+        snvOutput.write(str(key))
+        snvOutput.write("\t")
+        for i in range(0, len(SNVList[key])):
+            if i > 0:
+                snvOutput.write(",")
+            snvOutput.write(str(SNVList[key][i]))
+        snvOutput.write("\n")
+    snvOutput.close()
+    
+    # Create insertions file path        
+    insertFile = gene + ".insertions.tab"
+    outputPath13 = geneOutputDir + "/" + insertFile
+    insertOutput = open(outputPath13, "w")
+    
+    # Write insertions to file by readID in dictionary
+    insertK = insertList.keys()
+    for key in insertK:
+        insertOutput.write(str(key))
+        insertOutput.write("\t")
+        for i in range(0, len(insertList[key])):
+            if i > 0:
+                insertOutput.write(",")
+            insertOutput.write(str(insertList[key][i]))
+        insertOutput.write("\n")
+    insertOutput.close()
+    
+    # Create deletions file path        
+    deleteFile = gene + ".deletions.tab"
+    outputPath14 = geneOutputDir + "/" + deleteFile
+    deleteOutput = open(outputPath14, "w")
+    
+    # Write deletions to file by readID in dictionary
+    delK = delList.keys()
+    for key in delK:
+        deleteOutput.write(str(key))
+        deleteOutput.write("\t")
+        for i in range(0, len(delList[key])):
+            if i > 0:
+                deleteOutput.write(",")
+            deleteOutput.write(str(delList[key][i]))
+        deleteOutput.write("\n")
+    deleteOutput.close()
+    
+    print(time.ctime())

@@ -1,0 +1,28 @@
+Package: ScisorWiz
+Type: Package
+Title: Visualizes isoforms of a gene across up to 6 cell types
+Version: 1.0.0.1000
+Author: Alexander Stein
+Maintainer: Alexander Stein <ans4013@med.cornell.edu>
+Description: The Scisor-Wiz package visualizes single-cell RNA long-read 
+    sequencing, for example from the scisorseqr package (Joglekar et. al 2021), 
+    which processes long reads for differential isoform analysis. Scisor-Wiz 
+    allows the user to visualize alternative splicing patterns of any user-
+    specified gene present in a dataset for <=6 different user-specified cell 
+    types. Reads are displayed by cell type, and clustered according to the 
+    intron chain, TSS and/or polyA-site within each cell cluster. Nucleotide
+    mismatches can also be plotted using the MismatchFinder function to display
+    Single Nucleotide Polymorphisms (SNPs), nucleotide insertions, and nucleotide 
+    deletions.
+License: Weill Cornell Medicine
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.2
+Depends: R (>= 3.5.0)
+Imports: dplyr, stats, hash
+Language: en-US
+VignetteBuilder: knitr
+Suggests: rmarkdown, knitr
+NeedsCompilation: no
+Packaged: 2021-12-08 01:36:27 UTC; astei
