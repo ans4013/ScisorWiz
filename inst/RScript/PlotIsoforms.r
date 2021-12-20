@@ -66,6 +66,7 @@ getClustering<-function(a, m, cluster, num) {
 getMismatches<-function(alignment, SNVs, insertions, deletions){
     reads2Mismatches = hash()
     print("getting SNVs, insertions, and deletions")
+    alignment <- removePath(alignment)
     for(i in 1:length(alignment[,9])){
         readID = as.list(strsplit(as.character(alignment[i,9]), ":"))[[1]]
         x = dplyr::filter(SNVs, grepl(as.character(readID[3]), V1))
@@ -79,7 +80,7 @@ getMismatches<-function(alignment, SNVs, insertions, deletions){
 
 removePath<-function(alignments){
     alignments[,9]=as.vector(alignments[,9])
-    for(i in length(alignments[,9])){
+    for(i in 1:length(alignments[,9])){
         readAlign <- unlist(strsplit(as.character(alignments[i,9]), ".path1"))
         alignments[i,9] = as.vector(readAlign)
     }
@@ -94,59 +95,84 @@ countMismatches<-function(mismatch, totalReads){
 
     SNVList = list()
     for(i in 1:length(SNVtmp)){
-        SNVList[[length(SNVList)+1]] <- as.list(strsplit(as.character(SNVtmp[i]), ","))
+        snvs <- as.list(strsplit(as.character(SNVtmp[i]), ","))
+        for(i in 1:length(snvs[[1]])){
+            SNVList <- append(SNVList, as.numeric(snvs[[1]][i]))
+        }
     }
 
     snvCount <- tabulate(as.numeric(unlist(SNVList)))
     snvIncl = list()
     for(i in 1:length(snvCount)){
-        incl <- snvCount[i]/totalReads
-        if(snvCount[i] != 0 & incl > .05 & incl < .95) {
-            print(incl)
-            snvIncl <- append(snvIncl, i)
+        if(snvCount[[i]][1] != 0){
+            incl <- snvCount[[i]][1]/totalReads
+            if(snvCount[[i]][1] != 0 & incl > .05 & incl < .95) {
+                print(paste("snv at location:", i, "value:", snvCount[[i]], "- inclusion:", incl))
+                snvIncl <- append(snvIncl, i)
+            }
         }
     }
-
+    
     insList = list()
     for(i in 1:length(insTmp)){
-        insList[[length(insList)+1]] <- as.list(strsplit(as.character(insTmp[i]), ","))
+        ins <- as.list(strsplit(as.character(insTmp[i]), ","))
+        for(i in 1:length(ins[[1]])){
+            insList <- append(insList, as.numeric(ins[[1]][i]))
+        }
     }
 
     insCount <- tabulate(as.numeric(unlist(insList)))
     insIncl = list()
     for(i in 1:length(insCount)){
-        incl <- insCount[i]/totalReads
-        if(insCount[i] != 0 & incl > .05 & incl < .95) {
-            print(incl)
-            insIncl <- append(insIncl, i)
+        if(insCount[[i]][1] != 0){
+            incl <- insCount[[i]][1]/totalReads
+            if(insCount[[i]][1] != 0 & incl > .05 & incl < .95) {
+                print(paste("insertion at location:", i, "value:", insCount[[i]], "- inclusion:", incl))
+                insIncl <- append(insIncl, i)
+            }
         }
     }
 
     delList = list()
     for(i in 1:length(delTmp)){
-        delList[[length(delList)+1]] <- as.list(strsplit(as.character(delTmp[i]), ","))
+        del <- as.list(strsplit(as.character(delTmp[i]), ","))
+        for(i in 1:length(del[[1]])){
+            delList <- append(delList, as.numeric(del[[1]][i]))
+        }
     }
 
     delCount <- tabulate(as.numeric(unlist(delList)))
     delIncl = list()
     for(i in 1:length(delCount)){
-        incl <- delCount[i]/totalReads
-        if(delCount[i] != 0 & incl > .05 & incl < .95) {
-          print(incl)
-          delIncl <- append(delIncl, i)
+        if(delCount[[i]][1] != 0){
+            incl <- delCount[[i]][1]/totalReads
+            if(delCount[[i]][1] != 0 & incl > .05 & incl < .95) {
+                print(paste("deletion at location:", i, "value:", delCount[[i]], "- inclusion:", incl))
+                delIncl <- append(delIncl, i)
+            }
         }
     }
 
     includedMis <- list()
     if(length(snvIncl) > 0){
-        includedMis <- append(includedMis, snvIncl)
+        includedMis <- append(includedMis, list(snvIncl))
+    }
+    else{
+        includedMis <- append(includedMis, list("NONE"))
     }
     if(length(insIncl) > 0){
-        includedMis <- append(includedMis, insIncl)
+        includedMis <- append(includedMis, list(insIncl))
+    }
+    else{
+        includedMis <- append(includedMis, list("NONE"))
     }
     if(length(delIncl) > 0){
-        includedMis <- append(includedMis, delIncl)
+        includedMis <- append(includedMis, list(delIncl))
     }
+    else{
+        includedMis <- append(includedMis, list("NONE"))
+    }
+    print("includedMis")
     print(includedMis)
     return(includedMis)
 }
@@ -160,7 +186,9 @@ plotReads<-function(alignments,startLineNumber,numAlignedReads,alignmentHeader,a
     text(center,lineNumber,alignmentHeader,col=colReads,cex=1*cexT)
     lineNumber=lineNumber-15;
 
-    totalReads <- length(alignments[,9])
+    if(grepl(".path1", as.character(alignments[1,9]), fixed=TRUE)){
+        alignments = removePath(alignments)
+    }
 
     if(!(is.empty(mismatchPos))){
         incl <- list()
@@ -168,20 +196,22 @@ plotReads<-function(alignments,startLineNumber,numAlignedReads,alignmentHeader,a
         insIncl <- list()
         delIncl <- list()
 
-        incl <- countMismatches(mismatchPos, totalReads)
+        incl <- countMismatches(mismatchPos, totalCount)
         print("Post countMismaches")
-        print(incl)
-        snvIncl <- incl[1]
-        insIncl <- incl[2]
-        delIncl <- incl[3]
+        snvIncl <- incl[[1]]
+        insIncl <- incl[[2]]
+        delIncl <- incl[[3]]
 
         print(paste("snv:", snvIncl))
-        print(paste("ins", insIncl))
-        print(paste("del", delIncl))
+        print(paste("ins:", insIncl))
+        print(paste("del:", delIncl))
     }
 
     for(readAlignment in alignedReads){
-        exons=alignments[which(alignments[,9]==readAlignment),];
+        if(grepl(".path1", as.character(readAlignment), fixed=TRUE)){
+            readAlign <- unlist(strsplit(as.character(readAlignment), ".path1"))
+        }
+        exons=alignments[which(alignments[,9]==readAlign),];
         start=min(exons[,4]);
         end=max(exons[,5]);
         arrowPosLoc=c();
@@ -199,28 +229,36 @@ plotReads<-function(alignments,startLineNumber,numAlignedReads,alignmentHeader,a
 
         # showing mismatches
         if(!(is.empty(mismatchPos))){
-            if(grepl(".path1", as.character(alignments[1,9]), fixed=TRUE)){
-                alignments = removePath(alignments)
-            }
-            if(length(mismatchPos[[readAlignment]]) > 0){
-                mismatches=values(mismatchPos, readAlignment)
-                snvPos = as.list(strsplit(as.character(mismatches[1,]), ","))[[1]]
-                insertPos = as.list(strsplit(as.character(mismatches[2,]), ","))[[1]]
-                delPos = as.list(strsplit(as.character(mismatches[3,]), ","))[[1]]
+            if(length(mismatchPos[[readAlign]]) > 0){
+                mismatches=values(mismatchPos, readAlign)
+                snvPos = as.list(strsplit(as.character(mismatches[[1]][1]), ","))[[1]]
+                print("snvPos")
+                print(snvPos)
+                insertPos = as.list(strsplit(as.character(mismatches[[2]][1]), ","))[[1]]
+                print("insertPos")
+                print(insertPos)
+                delPos = as.list(strsplit(as.character(mismatches[[3]][1]), ","))[[1]]
+                print("delPos")
+                print(delPos)
 
+                print(paste("snvIncl:", typeof(snvIncl[[1]])))
+                print(paste("start:", typeof(start)))
+                print(paste("end:", typeof(end)))
                 for(i in 1:length(snvPos)){
-                    if(as.integer(snvPos[i]) %in% snvIncl){
-                        print(as.integer(snvPos[i]))
-                        if((as.integer(snvPos[i]) > from + 20) & (as.integer(snvPos[i]) < to - 20)){
+                    if(snvPos[i] %in% snvIncl){ # || as.integer(snvPos[i])-1 %in% snvIncl || snvPos[i]+1 %in% snvIncl){
+                        if((as.integer(snvPos[i]) > start + 20) & (as.integer(snvPos[i]) < end - 20)){
+                            print("valid snv found")
                             print(snvPos[i])
                             chosenCol="cyan";
                             rect(as.integer(snvPos[i])-10,lineNumber-localExonRadius,as.integer(snvPos[i])+10,lineNumber+localExonRadius,col=chosenCol,border=chosenCol);
                         }
                     }
                 }
+                print(insIncl)
                 for(i in 1:length(insertPos)){
-                    if(as.integer(insertPos[i]) %in% insIncl){
-                        if(insertPos[i] > from + 20 & insertPos[i] < to - 20){
+                    if(insertPos[i] %in% insIncl){ # || insertPos[i]-1 %in% insIncl || insertPos[i]+1 %in% insIncl){
+                        if(insertPos[i] > start + 20 & insertPos[i] < end - 20){
+                            print("valid ins found")
                             print(insertPos[i])
                             chosenCol="chartreuse"
                             rect(as.integer(insertPos[i])-10,lineNumber-localExonRadius,as.integer(insertPos[i])+10,lineNumber+localExonRadius,col=chosenCol,border=chosenCol);
@@ -228,8 +266,9 @@ plotReads<-function(alignments,startLineNumber,numAlignedReads,alignmentHeader,a
                     }
                 }
                 for(i in 1:length(delPos)){
-                    if(as.integer(insertPos[i]) %in% insIncl){
-                        if(delPos[i] > from + 20 & delPos[i] < to - 20){
+                    if(delPos[i] %in% delIncl){ # || delPos[i]-1 %in% delIncl || delPos[i]+1 %in% delIncl){
+                        if(delPos[i] > start + 20 & delPos[i] < end - 20){
+                            print("valid del found")
                             print(delPos[i])
                             chosenCol="red"
                             rect(as.integer(delPos[i])-10,lineNumber-localExonRadius,as.integer(delPos[i])+10,lineNumber+localExonRadius,col=chosenCol,border=chosenCol);
@@ -248,20 +287,18 @@ plotGenes<-function(annoGTF,alignedGFF1,alignedGFF2,alignedGFF3,alignedGFF4,alig
                     alignmentHeader1,alignmentHeader2,alignmentHeader3,alignmentHeader4,alignmentHeader5,alignmentHeader6,
                     colAnno="darkgray",colReads1="steelblue4",colReads2="darkorange",colReads3="black",colReads4="black",
                     colReads5="black",colReads6="black",cexT=1,SNVFile,insertFile,deleteFile,to,alignedReads1,alignedReads2,alignedReads3,alignedReads4,
-                    alignedReads5,alignedReads6,target1,target2,drawAxis,totalCount,altExons,projections,CI,specialColor){
+                    alignedReads5,alignedReads6,target1,target2,drawAxis,altExons,projections,CI,specialColor){
     cat("## starting plotGenes\n")
     anno=read.table(annoGTF)
 
-    totalCount <- nrow(orderMatrix)
-
     cat("## reading alignments\n")
     emptyDF=data.frame(factor(),factor(),factor(),integer(),integer(),factor(),factor(),factor(),factor())
-    alignments1=tryCatch({res=read.table(alignedGFF1, sep="\t")}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); }, finally = {cat("try-catch done\n")})
-    alignments2=tryCatch({res=read.table(alignedGFF2, sep="\t")}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); }, finally = {cat("try-catch done\n")})
-    alignments3=tryCatch({res=read.table(alignedGFF3, sep="\t")}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); }, finally = {cat("try-catch done\n")})
-    alignments4=tryCatch({res=read.table(alignedGFF4, sep="\t")}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); }, finally = {cat("try-catch done\n")})
-    alignments5=tryCatch({res=read.table(alignedGFF5, sep="\t")}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); }, finally = {cat("try-catch done\n")})
-    alignments6=tryCatch({res=read.table(alignedGFF6, sep="\t")}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); }, finally = {cat("try-catch done\n")})
+    alignments1=tryCatch({res=read.table(alignedGFF1, sep="\t")}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); })
+    alignments2=tryCatch({res=read.table(alignedGFF2, sep="\t")}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); })
+    alignments3=tryCatch({res=read.table(alignedGFF3, sep="\t")}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); })
+    alignments4=tryCatch({res=read.table(alignedGFF4, sep="\t")}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); })
+    alignments5=tryCatch({res=read.table(alignedGFF5, sep="\t")}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); })
+    alignments6=tryCatch({res=read.table(alignedGFF6, sep="\t")}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); })
 
     from = 100000
     plotEnd = 0
@@ -311,11 +348,9 @@ plotGenes<-function(annoGTF,alignedGFF1,alignedGFF2,alignedGFF3,alignedGFF4,alig
     reads2Mismatches5 = hash()
     reads2Mismatches6 = hash()
 
-    print(length(args))
     if(length(args) > 13){
         cat("## getting alignment IDs and numbers\n")
         SNVTable = read.table(SNVFile)
-        #print(SNVTable)
         insertTable = read.table(insertFile)
         deleteTable = read.table(deleteFile)
 
@@ -370,37 +405,37 @@ plotGenes<-function(annoGTF,alignedGFF1,alignedGFF2,alignedGFF3,alignedGFF4,alig
     cat("# the aligned reads 1\n");
     cat("enter with ",ytop,"; using ", numAlignedReads1,"reads\n")
     newLineNumber=plotReads(alignments1,ytop,numAlignedReads1,alignmentHeader1,alignedReads1,from,to,center,cexT,colReads1,
-                            localExonRadius,reads2Mismatches1,target1,target2,totalCount,CI,altExons,specialColor);
+                            localExonRadius,reads2Mismatches1,target1,target2,numAlignedReads1,CI,altExons,specialColor);
 
     cat("# the aligned reads 2\n");
     ytop=ytop- (2*numAlignedReads1)-40;
     cat("enter with ",ytop,"; using ", numAlignedReads2,"reads\n")
     newLineNumber=plotReads(alignments2,ytop,numAlignedReads2,alignmentHeader2,alignedReads2,from,to,center,cexT,colReads2,
-                            localExonRadius,reads2Mismatches2,target1,target2,totalCount,CI,altExons,specialColor);
+                            localExonRadius,reads2Mismatches2,target1,target2,numAlignedReads2,CI,altExons,specialColor);
 
     cat("# the aligned reads 3\n");
     ytop=ytop- (2*numAlignedReads2)-40;
     cat("enter with ",ytop,"; using ", numAlignedReads3,"reads\n")
     newLineNumber=plotReads(alignments3,ytop,numAlignedReads3,alignmentHeader3,alignedReads3,from,to,center,cexT,colReads3,
-                            localExonRadius,reads2Mismatches3,target1,target2,totalCount,CI,altExons,specialColor);
+                            localExonRadius,reads2Mismatches3,target1,target2,numAlignedReads3,CI,altExons,specialColor);
 
     cat("# the aligned reads 4\n");
     ytop=ytop- (2*numAlignedReads3)-40;
     cat("enter with ",ytop ,"; using ", numAlignedReads4,"reads\n")
     newLineNumber=plotReads(alignments4,ytop,numAlignedReads4,alignmentHeader4,alignedReads4,from,to,center,cexT,colReads4,
-                            localExonRadius,reads2Mismatches4,target1,target2,totalCount,CI,altExons,specialColor);
+                            localExonRadius,reads2Mismatches4,target1,target2,numAlignedReads4,CI,altExons,specialColor);
 
     cat("# the aligned reads 5\n");
     ytop=ytop- (2*numAlignedReads4)-40;
     cat("enter with ",ytop,"; using ", numAlignedReads5,"reads\n")
     newLineNumber=plotReads(alignments5,ytop,numAlignedReads5,alignmentHeader5,alignedReads5,from,to,center,cexT,colReads5,
-                            localExonRadius,reads2Mismatches5,target1,target2,totalCount,CI,altExons,specialColor);
+                            localExonRadius,reads2Mismatches5,target1,target2,numAlignedReads5,CI,altExons,specialColor);
 
     cat("# the aligned reads 6\n");
     ytop=ytop- (2*numAlignedReads5)-40;
     cat("enter with ",ytop,"; using ", numAlignedReads6,"reads\n")
     newLineNumber=plotReads(alignments6,ytop,numAlignedReads6,alignmentHeader6,alignedReads6,from,to,center,cexT,colReads6,
-                            localExonRadius,reads2Mismatches6,target1,target2,totalCount,CI,altExons,specialColor);
+                            localExonRadius,reads2Mismatches6,target1,target2,numAlignedReads6,CI,altExons,specialColor);
 
     cat("# the annotated transcripts\n")
     ytop=ytop- (2*numAlignedReads6)-40;
@@ -711,27 +746,27 @@ if(lastFigure>=3){
 
     par(mar=marVector-c(3.5,4,4,2))
     cat("reading", as.character(cellTypeTableWithFileNames[1,1]), "data\n")
-    a1=tryCatch({res=read.table(as.character(cellTypeTableWithFileNames[1,2]))}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); }, finally = {cat("try-catch done\n")})
+    a1=tryCatch({res=read.table(as.character(cellTypeTableWithFileNames[1,2]))}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); })
     print(dim(a1))
 
      cat("reading", as.character(cellTypeTableWithFileNames[2,1]), "data\n")
-    a2=tryCatch({res=read.table(as.character(cellTypeTableWithFileNames[2,2]))}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); }, finally = {cat("try-catch done\n")})
+    a2=tryCatch({res=read.table(as.character(cellTypeTableWithFileNames[2,2]))}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); })
     print(dim(a2))
 
     cat("reading", as.character(cellTypeTableWithFileNames[3,1]), "data\n")
-    a3=tryCatch({res=read.table(as.character(cellTypeTableWithFileNames[3,2]))}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); }, finally = {cat("try-catch done\n")})
+    a3=tryCatch({res=read.table(as.character(cellTypeTableWithFileNames[3,2]))}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); })
     print(dim(a3))
 
     cat("reading", as.character(cellTypeTableWithFileNames[4,1]), "data\n")
-    a4=tryCatch({res=read.table(as.character(cellTypeTableWithFileNames[4,2]))}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); }, finally = {cat("try-catch done\n")})
+    a4=tryCatch({res=read.table(as.character(cellTypeTableWithFileNames[4,2]))}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); })
     print(dim(a4))
 
     cat("reading", as.character(cellTypeTableWithFileNames[5,1]), "data\n")
-    a5=tryCatch({res=read.table(as.character(cellTypeTableWithFileNames[5,2]))}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); }, finally = {cat("try-catch done\n")})
+    a5=tryCatch({res=read.table(as.character(cellTypeTableWithFileNames[5,2]))}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); })
     print(dim(a5))
 
     cat("reading", as.character(cellTypeTableWithFileNames[6,1]), "data\n")
-    a6=tryCatch({res=read.table(as.character(cellTypeTableWithFileNames[6,2]))}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); }, finally = {cat("try-catch done\n")})
+    a6=tryCatch({res=read.table(as.character(cellTypeTableWithFileNames[6,2]))}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); }) #, finally = {cat("try-catch done\n")})
     print(dim(a6))
 
     cat("reading order matrix\n")
