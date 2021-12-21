@@ -17,6 +17,8 @@
 #' @param gene User-specified gene of interest
 #' @param ci User-specified confidence interval for reads to be considered
 #' alternate exons. Is .05 by default.
+#' @param mismatchCutoff User-specified cutoff for SNV inclusion rate. Is .05 by
+#' default.
 #' @param outputDir User-specified directory to store all output from the
 #' pipeline
 #' @param mismatchFile Output of MismatchFinder function if used. Is NULL by
@@ -25,13 +27,13 @@
 #' @return Plot visualizing isoform expression of the gene of interest among up
 #' to 6 user-specified cell types
 #'
-#' @usage ScisorWiz_2File(gencodeAnno, gffInput, genesInput, cellTypeFile, gene, ci,
-#' outputDir, mismatchFile)
+#' @usage ScisorWiz_2File(gencodeAnno, gffInput, genesInput, cellTypeFile, gene,
+#' ci, mismatchCutoff, outputDir, mismatchFile)
 #'
 #' @export
 
-ScisorWiz_2File <- function(gencodeAnno, gffInput, genesInput, cellTypeFile, gene, ci=.05,
-                      outputDir, mismatchFile=NULL) {
+ScisorWiz_2File <- function(gencodeAnno, gffInput, genesInput, cellTypeFile, gene,
+                            ci=.05, mismatchCutoff=.05, outputDir, mismatchFile=NULL) {
   print("================= Handling arguments =================")
 
   dir.create(outputDir, recursive = T)
@@ -116,13 +118,13 @@ ScisorWiz_2File <- function(gencodeAnno, gffInput, genesInput, cellTypeFile, gen
     deletionsFile <- paste0(geneOutput, gene, ".deletions.tab")
     runR <- paste("Rscript", R_file, "pdf", plotName, 3, annoRemap,
                   cellTypeFilewithFileNames, orderFile, all5File, altExonsFile,
-                  projectionRemapFile, gene, 1, ci, plotOutput, SNVFile,
-                  insertionsFile, deletionsFile)
+                  projectionRemapFile, gene, 1, ci, mismatchCutoff, plotOutput,
+                  SNVFile, insertionsFile, deletionsFile)
   }
   else{
     runR <- paste("Rscript", R_file, "pdf", plotName, 3, annoRemap,
                 cellTypeFilewithFileNames, orderFile, all5File, altExonsFile,
-                projectionRemapFile, gene, 1, ci, plotOutput)
+                projectionRemapFile, gene, 1, ci, mismatchCutoff, plotOutput)
   }
   system(runR)
 

@@ -20,6 +20,8 @@
 #' TSS site, 3 = PolyA site, 4 = intron chain, TSS site, and PolyA site)
 #' @param ci User-specified confidence interval for reads to be considered
 #' alternate exons. Is .05 by default.
+#' @param mismatchCutoff User-specified cutoff for SNV inclusion rate. Is .05 by
+#' default.
 #' @param outputDir User-specified directory to store all output from the
 #' pipeline
 #' @param mismatchFile Output of MismatchFinder function if used. Is NULL by
@@ -29,12 +31,13 @@
 #' to 6 user-specified cell types
 #'
 #' @usage ScisorWiz_AllInfo(gencodeAnno, AllInfoInput, cellTypeFile, gene,
-#' cluster, ci, outputDir, mismatchFile)
+#' cluster, ci, mismatchCutoff, outputDir, mismatchFile)
 #'
 #' @export
 
 ScisorWiz_AllInfo <- function(gencodeAnno, AllInfoInput, cellTypeFile, gene,
-                              cluster, ci=.05, outputDir, mismatchFile=NULL) {
+                              cluster, ci=.05, mismatchCutoff=.05, outputDir,
+                              mismatchFile=NULL) {
   print("================= Handling arguments =================")
 
   dir.create(outputDir, recursive = T)
@@ -114,13 +117,14 @@ ScisorWiz_AllInfo <- function(gencodeAnno, AllInfoInput, cellTypeFile, gene,
     deletionsFile <- paste0(geneOutput, gene, ".deletions.tab")
     runR <- paste("Rscript", R_file, "pdf", plotName, 3, annoRemap,
                   cellTypeFilewithFileNames, orderFile, all5File, altExonsFile,
-                  projectionRemapFile, gene, cluster, ci, plotOutput, SNVFile,
-                  insertionsFile, deletionsFile)
+                  projectionRemapFile, gene, cluster, ci, mismatchCutoff,
+                  plotOutput, SNVFile, insertionsFile, deletionsFile)
   }
   else{
     runR <- paste("Rscript", R_file, "pdf", plotName, 3, annoRemap,
                 cellTypeFilewithFileNames, orderFile, all5File, altExonsFile,
-                projectionRemapFile, gene, cluster, ci, plotOutput)
+                projectionRemapFile, gene, cluster, ci, mismatchCutoff,
+                plotOutput)
   }
   system(runR)
 

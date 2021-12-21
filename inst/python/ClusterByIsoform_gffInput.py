@@ -6,7 +6,6 @@ from os import path
 import time
 import re
 
-print(time.ctime())
 
 # Step 1 - Manage arguments and check for errors
 print("Step 1 - Managing command line arguments")
@@ -41,11 +40,10 @@ if len(sys.argv) > 8:
 else:
     mismatchFile = None
 
-print(time.ctime())
 
 # Step 2 - Organize data
 # Step 2a - Get annotation for the gene
-print("Step 2 - Getting annotation for", gene)
+print("Step 2 - Getting annotation for", gene, "-- May take some time depending on file size")
 annoFile = gzip.open(annotationFile, "rb")
 
 #geneMatch = "\\b" + gene + "\\b"
@@ -78,8 +76,6 @@ for i in annoContents:
 
 annoOutput.close()
 
-print(time.ctime())
-
 
 # Get start, end, chromosome and strand for the gene
 print("Step 3 - Getting start, end, chromosome and strand for", gene, "gene")
@@ -98,11 +94,10 @@ chromosome = annoContents[0][0]
 strand = annoContents[0][6]
 
 print(chromosome, " : ", minimum, "-", maximum, " : ", strand)
-print(time.ctime())
 
 
 # Get all reads from all datasets
-print("Step 4 - Getting all reads from all datasets")
+print("Step 4 - Getting all reads from all datasets -- May take some time depending on file size")
 
 ## Grab geneID for the reads. This step assumes same geneID for all rows in
 ##     annoContents array
@@ -155,8 +150,6 @@ for line in range(0,len(geneIDMatch)):#List:
 
 spanningRegionOutput.close()
 
-print(time.ctime())
-
 
 # Order by isoform
 print("Step 5 - Ordering by isoform")
@@ -208,8 +201,6 @@ for line in struc:
     orderOutput.write("\n".encode())
 
 orderOutput.close()
-
-print(time.ctime())
 
 
 # Make projection
@@ -283,8 +274,6 @@ for line in projection:
 
 projOutput.close()
 
-print(time.ctime())
-
 
 # Remap projection to new coordinates
 print("Step 7 - Remapping projection to new coordinates")
@@ -324,8 +313,6 @@ for line in remap:
     remapOutput.write("\n".encode())
 
 remapOutput.close()
-
-print(time.ctime())
 
 
 # Remap reads to new coordinates
@@ -387,8 +374,6 @@ for cType in cellType:
     remapReadOutput.close()
 
 cellType.close()
-
-print(time.ctime())
 
 
 # Find alternative exons
@@ -463,8 +448,6 @@ for exon in altExons:
 
 altExonOutput.close()
 
-print(time.ctime())
-
 
 # Remap geneIDMatch to new coordinates
 print("Step 10 - Remapping all5DatasetsSpanningRegion to the new coordinates.")
@@ -504,8 +487,6 @@ for line in geneIDRemap:
     geneIDRemapOutput.write("\n".encode())
 
 geneIDRemapOutput.close()
-
-print(time.ctime())
 
 
 # Ordering remapped geneIDMatch by isoform
@@ -558,8 +539,6 @@ for line in strucRemap:
     orderRemapOutput.write("\n".encode())
 
 orderRemapOutput.close()
-
-print(time.ctime())
 
 
 # Remap annotation to new coordinates
@@ -674,8 +653,6 @@ for line in annoRemap:
 
 remapAnnoOutput.close()
 
-print(time.ctime())
-
 
 # Set variables for the plot
 print("Step 13 - Setting variables for the plot")
@@ -711,7 +688,6 @@ for line in plotData:
 
 plotNamesOutput.close()
 
-print(time.ctime())
 
 # Identify and remap SNVs, insertions, and deletions if option is chosen by user
 if mismatchFile != None:
@@ -874,5 +850,3 @@ if mismatchFile != None:
             deleteOutput.write(str(delList[key][i]))
         deleteOutput.write("\n")
     deleteOutput.close()
-    
-    print(time.ctime())

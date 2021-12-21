@@ -87,7 +87,7 @@ removePath<-function(alignments){
     return(alignments)
 }
 
-countMismatches<-function(mismatch, totalReads){
+countMismatches<-function(mismatch, totalReads, mismatchCutoff){
     SNVtmp <- as.list(values(mismatch)[1,])
     insTmp <- as.list(values(mismatch)[2,])
     delTmp <- as.list(values(mismatch)[3,])
@@ -106,13 +106,13 @@ countMismatches<-function(mismatch, totalReads){
     for(i in 1:length(snvCount)){
         if(snvCount[[i]][1] != 0){
             incl <- snvCount[[i]][1]/totalReads
-            if(snvCount[[i]][1] != 0 & incl > .05 & incl < .95) {
+            if(snvCount[[i]][1] != 0 & incl > mismatchCutoff & incl < (1-mismatchCutoff)) {
                 print(paste("snv at location:", i, "value:", snvCount[[i]], "- inclusion:", incl))
                 snvIncl <- append(snvIncl, i)
             }
         }
     }
-    
+
     insList = list()
     for(i in 1:length(insTmp)){
         ins <- as.list(strsplit(as.character(insTmp[i]), ","))
@@ -126,7 +126,7 @@ countMismatches<-function(mismatch, totalReads){
     for(i in 1:length(insCount)){
         if(insCount[[i]][1] != 0){
             incl <- insCount[[i]][1]/totalReads
-            if(insCount[[i]][1] != 0 & incl > .05 & incl < .95) {
+            if(insCount[[i]][1] != 0 & incl > mismatchCutoff & incl < (1-mismatchCutoff)) {
                 print(paste("insertion at location:", i, "value:", insCount[[i]], "- inclusion:", incl))
                 insIncl <- append(insIncl, i)
             }
@@ -146,7 +146,8 @@ countMismatches<-function(mismatch, totalReads){
     for(i in 1:length(delCount)){
         if(delCount[[i]][1] != 0){
             incl <- delCount[[i]][1]/totalReads
-            if(delCount[[i]][1] != 0 & incl > .05 & incl < .95) {
+            print(paste(delCount[[i]][1], totalReads, incl))
+            if(delCount[[i]][1] != 0 & incl > mismatchCutoff & incl < (1-mismatchCutoff)) {
                 print(paste("deletion at location:", i, "value:", delCount[[i]], "- inclusion:", incl))
                 delIncl <- append(delIncl, i)
             }
@@ -196,8 +197,8 @@ plotReads<-function(alignments,startLineNumber,numAlignedReads,alignmentHeader,a
         insIncl <- list()
         delIncl <- list()
 
-        incl <- countMismatches(mismatchPos, totalCount)
-        print("Post countMismaches")
+        incl <- countMismatches(mismatchPos, totalCount, as.double(mismatchCutoff))
+        #print("Post countMismaches")
         snvIncl <- incl[[1]]
         insIncl <- incl[[2]]
         delIncl <- incl[[3]]
@@ -210,6 +211,9 @@ plotReads<-function(alignments,startLineNumber,numAlignedReads,alignmentHeader,a
     for(readAlignment in alignedReads){
         if(grepl(".path1", as.character(readAlignment), fixed=TRUE)){
             readAlign <- unlist(strsplit(as.character(readAlignment), ".path1"))
+        }
+        else{
+            readAlign <- readAlignment
         }
         exons=alignments[which(alignments[,9]==readAlign),];
         start=min(exons[,4]);
@@ -241,9 +245,6 @@ plotReads<-function(alignments,startLineNumber,numAlignedReads,alignmentHeader,a
                 print("delPos")
                 print(delPos)
 
-                print(paste("snvIncl:", typeof(snvIncl[[1]])))
-                print(paste("start:", typeof(start)))
-                print(paste("end:", typeof(end)))
                 for(i in 1:length(snvPos)){
                     if(snvPos[i] %in% snvIncl){ # || as.integer(snvPos[i])-1 %in% snvIncl || snvPos[i]+1 %in% snvIncl){
                         if((as.integer(snvPos[i]) > start + 20) & (as.integer(snvPos[i]) < end - 20)){
@@ -287,7 +288,7 @@ plotGenes<-function(annoGTF,alignedGFF1,alignedGFF2,alignedGFF3,alignedGFF4,alig
                     alignmentHeader1,alignmentHeader2,alignmentHeader3,alignmentHeader4,alignmentHeader5,alignmentHeader6,
                     colAnno="darkgray",colReads1="steelblue4",colReads2="darkorange",colReads3="black",colReads4="black",
                     colReads5="black",colReads6="black",cexT=1,SNVFile,insertFile,deleteFile,to,alignedReads1,alignedReads2,alignedReads3,alignedReads4,
-                    alignedReads5,alignedReads6,target1,target2,drawAxis,altExons,projections,CI,specialColor){
+                    alignedReads5,alignedReads6,target1,target2,drawAxis,altExons,projections,readLengths,CI,mismatchCutoff,specialColor){
     cat("## starting plotGenes\n")
     anno=read.table(annoGTF)
 
@@ -348,7 +349,7 @@ plotGenes<-function(annoGTF,alignedGFF1,alignedGFF2,alignedGFF3,alignedGFF4,alig
     reads2Mismatches5 = hash()
     reads2Mismatches6 = hash()
 
-    if(length(args) > 13){
+    if(length(args) > 14){
         cat("## getting alignment IDs and numbers\n")
         SNVTable = read.table(SNVFile)
         insertTable = read.table(insertFile)
@@ -402,40 +403,43 @@ plotGenes<-function(annoGTF,alignedGFF1,alignedGFF2,alignedGFF3,alignedGFF4,alig
         ytop=ytop-5;
     }
 
+    print(readLengths[[1]])
+    print(typeof(readLengths[[1]]))
+
     cat("# the aligned reads 1\n");
     cat("enter with ",ytop,"; using ", numAlignedReads1,"reads\n")
     newLineNumber=plotReads(alignments1,ytop,numAlignedReads1,alignmentHeader1,alignedReads1,from,to,center,cexT,colReads1,
-                            localExonRadius,reads2Mismatches1,target1,target2,numAlignedReads1,CI,altExons,specialColor);
+                            localExonRadius,reads2Mismatches1,target1,target2,readLengths[[1]],CI,altExons,specialColor);
 
     cat("# the aligned reads 2\n");
     ytop=ytop- (2*numAlignedReads1)-40;
     cat("enter with ",ytop,"; using ", numAlignedReads2,"reads\n")
     newLineNumber=plotReads(alignments2,ytop,numAlignedReads2,alignmentHeader2,alignedReads2,from,to,center,cexT,colReads2,
-                            localExonRadius,reads2Mismatches2,target1,target2,numAlignedReads2,CI,altExons,specialColor);
+                            localExonRadius,reads2Mismatches2,target1,target2,readLengths[[2]],CI,altExons,specialColor);
 
     cat("# the aligned reads 3\n");
     ytop=ytop- (2*numAlignedReads2)-40;
     cat("enter with ",ytop,"; using ", numAlignedReads3,"reads\n")
     newLineNumber=plotReads(alignments3,ytop,numAlignedReads3,alignmentHeader3,alignedReads3,from,to,center,cexT,colReads3,
-                            localExonRadius,reads2Mismatches3,target1,target2,numAlignedReads3,CI,altExons,specialColor);
+                            localExonRadius,reads2Mismatches3,target1,target2,readLengths[[3]],CI,altExons,specialColor);
 
     cat("# the aligned reads 4\n");
     ytop=ytop- (2*numAlignedReads3)-40;
     cat("enter with ",ytop ,"; using ", numAlignedReads4,"reads\n")
     newLineNumber=plotReads(alignments4,ytop,numAlignedReads4,alignmentHeader4,alignedReads4,from,to,center,cexT,colReads4,
-                            localExonRadius,reads2Mismatches4,target1,target2,numAlignedReads4,CI,altExons,specialColor);
+                            localExonRadius,reads2Mismatches4,target1,target2,readLengths[[4]],CI,altExons,specialColor);
 
     cat("# the aligned reads 5\n");
     ytop=ytop- (2*numAlignedReads4)-40;
     cat("enter with ",ytop,"; using ", numAlignedReads5,"reads\n")
     newLineNumber=plotReads(alignments5,ytop,numAlignedReads5,alignmentHeader5,alignedReads5,from,to,center,cexT,colReads5,
-                            localExonRadius,reads2Mismatches5,target1,target2,numAlignedReads5,CI,altExons,specialColor);
+                            localExonRadius,reads2Mismatches5,target1,target2,readLengths[[5]],CI,altExons,specialColor);
 
     cat("# the aligned reads 6\n");
     ytop=ytop- (2*numAlignedReads5)-40;
     cat("enter with ",ytop,"; using ", numAlignedReads6,"reads\n")
     newLineNumber=plotReads(alignments6,ytop,numAlignedReads6,alignmentHeader6,alignedReads6,from,to,center,cexT,colReads6,
-                            localExonRadius,reads2Mismatches6,target1,target2,numAlignedReads6,CI,altExons,specialColor);
+                            localExonRadius,reads2Mismatches6,target1,target2,readLengths[[6]],CI,altExons,specialColor);
 
     cat("# the annotated transcripts\n")
     ytop=ytop- (2*numAlignedReads6)-40;
@@ -478,35 +482,6 @@ plotGenes<-function(annoGTF,alignedGFF1,alignedGFF2,alignedGFF3,alignedGFF4,alig
             exonOrder[nrow(exonOrder)+1,] = c(projections[proj,5], projections[proj,6])
         }
     }
-    #startEnd = data.frame(start=integer(0), end=integer(0))
-    #for(trIndex in annoTransIndexes){
-    #    tr=anno[trIndex,12]
-    #    allExons=anno[which(anno[,3]=="CDS" | anno[,3] == "exon" & anno[,12]==tr),]
-    #    print("allExons") #test
-    #    print(length(allExons[1,])) #test
-    #    for(i in 1:length(allExons)){
-    #        len = nrow(startEnd)
-    #        startEnd[nrow(startEnd)+1,] = c(allExons[i,4], allExons[i,5])
-    #    }
-    #}
-    #print(startEnd)
-    #print(startEnd[order(startEnd$start),])
-    #startEnd <- unique(startEnd)
-    #startEnd <- startEnd[order(startEnd$start),]
-
-    #print(startEnd)
-    #exonOrder = data.frame(start=integer(0), end=integer(0))
-    #count = 1
-    #for(exon in 1:nrow(startEnd)){
-    #    if(exon == count){
-    #        readStart = startEnd$start[exon]
-    #        readEnd = startEnd$end[exon]
-    #        data <- startEnd %>% filter(start == readStart | end == readEnd)
-    #        exonOrder[nrow(exonOrder)+1,] = c(min(data$start), min(data$end))
-    #        count = count + nrow(data)
-    #    }
-    #}
-    #print(exonOrder)
 
     for(i in 1:nrow(exonOrder)){
         loc = list(exonOrder$start[i], exonOrder$end[i])
@@ -572,22 +547,25 @@ cat("Cluster method =", cluster, "\n")
 
 CI=args[12];
 CI = format(round(as.integer(CI), 2), nsmall=2)
-upper = 1 - as.integer(CI)
+upper = 1 - as.double(CI)
 upper = format(round(upper, 2), nsmall=2)
-cat("Confidence Interval = ", CI, "-", upper,"\n");
+cat("Confidence Interval = ", as.double(CI), "-", as.double(upper),"\n");
 
-output=args[13]
+mismatchCutoff=args[13]
+cat("Mismatch Cutoff = ", mismatchCutoff, "\n")
+
+output=args[14]
 outputDir = paste0(output,geneName)
 cat("outputDir = ", outputDir, "\n");
 
-if(length(args) > 13){
-    SNVFile=args[14]
+if(length(args) > 14){
+    SNVFile=args[15]
     cat("SNVFile =", SNVFile, "\n")
 
-    insertFile=args[15]
+    insertFile=args[16]
     cat("insertFile =", insertFile, "\n")
 
-    deleteFile=args[16]
+    deleteFile=args[17]
     cat("deleteFile =", deleteFile, "\n")
 }
 
@@ -779,7 +757,6 @@ if(lastFigure>=3){
     projections=read.table(projFile)
 
     projected=projections[which(projections[,4]=="exonic"),]
-    #print(projected)
     rightPlotEnd = max(projected[,6])
 
     order1 <- getClustering(a1, m, cluster, 1)
@@ -788,6 +765,21 @@ if(lastFigure>=3){
     order4 <- getClustering(a4, m, cluster, 4)
     order5 <- getClustering(a5, m, cluster, 5)
     order6 <- getClustering(a6, m, cluster, 6)
+
+    readLengths <- list()
+    readOrder1=rownames(m)[which(rownames(m) %in% a1[,9])]
+    readLengths <- append(readLengths, length(readOrder1))
+    readOrder2=rownames(m)[which(rownames(m) %in% a2[,9])]
+    readLengths <- append(readLengths, length(readOrder2))
+    readOrder3=rownames(m)[which(rownames(m) %in% a3[,9])]
+    readLengths <- append(readLengths, length(readOrder3))
+    readOrder4=rownames(m)[which(rownames(m) %in% a4[,9])]
+    readLengths <- append(readLengths, length(readOrder4))
+    readOrder5=rownames(m)[which(rownames(m) %in% a5[,9])]
+    readLengths <- append(readLengths, length(readOrder5))
+    readOrder6=rownames(m)[which(rownames(m) %in% a6[,9])]
+    readLengths <- append(readLengths, length(readOrder6))
+    print(readLengths)
 
     plotGenes(annoGTF=exampleAnnotationGTF,alignedGFF1=as.character(cellTypeTableWithFileNames[1,2]),
               alignedGFF2=as.character(cellTypeTableWithFileNames[2,2]),alignedGFF3=as.character(cellTypeTableWithFileNames[3,2]),
@@ -800,8 +792,8 @@ if(lastFigure>=3){
               colReads3=as.character(cellTypeTableWithFileNames[3,4]),colReads4=as.character(cellTypeTableWithFileNames[4,4]),
               colReads5=as.character(cellTypeTableWithFileNames[5,4]),colReads6=as.character(cellTypeTableWithFileNames[6,4]),cexT=mycex,
               SNVFile,insertFile,deleteFile,rightPlotEnd,alignedReads1=order1,alignedReads2=order2,alignedReads3=order3,alignedReads4=order4,alignedReads5=order5,
-              alignedReads6=order6,56889953,56890775,drawAxis=FALSE,altExons=altExons,projections=projections,
-              CI=CI,specialColor="darkorange");
+              alignedReads6=order6,56889953,56890775,drawAxis=FALSE,altExons=altExons,projections=projections,readLengths=readLengths,
+              CI=CI,mismatchCutoff,specialColor="darkorange");
     warnings()
 }
 

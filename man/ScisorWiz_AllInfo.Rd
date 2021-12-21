@@ -6,7 +6,7 @@
 \title{ScisorWiz AllInfo File pipeline}
 \usage{
 ScisorWiz_AllInfo(gencodeAnno, AllInfoInput, cellTypeFile, gene,
-cluster, ci, outputDir, mismatchFile)
+cluster, ci, mismatchCutoff, outputDir, mismatchFile)
 }
 \arguments{
 \item{gencodeAnno}{Gencode annotation file from which data files are created}
@@ -25,6 +25,9 @@ TSS site, 3 = PolyA site, 4 = intron chain, TSS site, and PolyA site)}
 
 \item{ci}{User-specified confidence interval for reads to be considered
 alternate exons. Is .05 by default.}
+
+\item{mismatchCutoff}{User-specified cutoff for SNV inclusion rate. Is .05 by
+default.}
 
 \item{outputDir}{User-specified directory to store all output from the
 pipeline}

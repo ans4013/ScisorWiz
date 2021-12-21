@@ -5,8 +5,8 @@
 \alias{ScisorWiz2File}
 \title{ScisorWiz 2 File pipeline}
 \usage{
-ScisorWiz_2File(gencodeAnno, gffInput, genesInput, cellTypeFile, gene, ci,
-outputDir, mismatchFile)
+ScisorWiz_2File(gencodeAnno, gffInput, genesInput, cellTypeFile, gene,
+ci, mismatchCutoff, outputDir, mismatchFile)
 }
 \arguments{
 \item{gencodeAnno}{Gencode annotation file from which data files are created}
@@ -24,6 +24,9 @@ of reads of those celltypes for the output plot}
 
 \item{ci}{User-specified confidence interval for reads to be considered
 alternate exons. Is .05 by default.}
+
+\item{mismatchCutoff}{User-specified cutoff for SNV inclusion rate. Is .05 by
+default.}
 
 \item{outputDir}{User-specified directory to store all output from the
 pipeline}
