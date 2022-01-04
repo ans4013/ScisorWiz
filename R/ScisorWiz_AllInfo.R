@@ -17,15 +17,16 @@
 #' of reads of those celltypes for the output plot
 #' @param gene User-specified gene of interest
 #' @param cluster User-specified clustering method (1 = intron chain, 2 =
-#' TSS site, 3 = PolyA site, 4 = intron chain, TSS site, and PolyA site)
+#' TSS site, 3 = PolyA site, 4 = intron chain, TSS site, and PolyA site).
+#' Default is 1 (intron chain)
 #' @param ci User-specified confidence interval for reads to be considered
-#' alternate exons. Is .05 by default.
-#' @param mismatchCutoff User-specified cutoff for SNV inclusion rate. Is .05 by
-#' default.
+#' alternate exons. Default is .05.
+#' @param mismatchCutoff User-specified cutoff for SNV inclusion rate. Default
+#' is .05
 #' @param outputDir User-specified directory to store all output from the
 #' pipeline
-#' @param mismatchFile Output of MismatchFinder function if used. Is NULL by
-#' default.
+#' @param mismatchFile Output of MismatchFinder function if used. Default is
+#' NULL.
 #'
 #' @return Plot visualizing isoform expression of the gene of interest among up
 #' to 6 user-specified cell types
@@ -36,7 +37,7 @@
 #' @export
 
 ScisorWiz_AllInfo <- function(gencodeAnno, AllInfoInput, cellTypeFile, gene,
-                              cluster, ci=.05, mismatchCutoff=.05, outputDir,
+                              cluster=1, ci=.05, mismatchCutoff=.05, outputDir,
                               mismatchFile=NULL) {
   print("================= Handling arguments =================")
 

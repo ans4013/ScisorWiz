@@ -50,10 +50,13 @@ Using AllInfo file output from the scisorseqr package, the user can choose the c
   - Cell type file listing user-specified cell types of interest and the display color of each (example of document format below)\*
   - Gene of interest
   - Clustering method\*\*
-  - Confidence interval (CI) for alternative exon consideration. Default value for
-    exon inclusion rate is .05 (5% < altExon inclusion < 95%)
+  - Optional: Confidence interval (CI) for alternative exon consideration.
+    Default value for exon inclusion rate is .05 (5% < altExon inclusion < 95%)
+  - Optional: Mismatch Cutoff to eliminate sequencing errors. Default value is
+    .05 (5% < mismatch inclusion < 95%)
   - Output directory in which the user wants output files stored
-  - Optional: Mismatches file containing output from the MismatchFinder function (see Section 2). Default value is NULL
+  - Optional: Mismatches file containing output from the MismatchFinder function
+    (see Section 2). Default value is NULL
 
 \*Celltype file is tab separated with each cell type on a new line and cell type names must be written exactly as they appear in the GENCODE file. The file looks like the following:
 
@@ -83,17 +86,20 @@ cTypeFile <- system.file("extdata/", "userInput/celltypeFile",
 
 ## Run command without plotting mismatches
 ScisorWiz_AllInfo(gencodeAnno = gencodeAnnoFile, AllInfoInput = allInfoFile,
-                  cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1, ci = .05,
-                  outputDir = "extdata/outputDir/")
+                  cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1,
+                  ci = .05, outputDir = "extdata/outputDir/")
 
 ##___________________________________OR____________________________________##
 
+# If the optional mismatchFinder function hasn't been run, the mismatches file
+# is located in extData/, rather than within the outputDir subdirectory
 mismatches <- system.file("extdata/", "outputDir/Snap25.mismatches.txt.gz",
                            package = "ScisorWiz")
 
 ## Run command with plotting mismatches
 ScisorWiz_AllInfo(gencodeAnno = gencodeAnnoFile, AllInfoInput = allInfoFile,
-                  cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1, ci = .05
+                  cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1,
+                  ci = .05, mismatchCutoff = .05,
                   outputDir = "extdata/outputDir/", mismatchFile = mismatches)
 ```
 
@@ -112,10 +118,13 @@ Without the AllInfo file from the scisorseqr pipeline, the user can still run Sc
   - GENCODE annotation file for user data
   - gff.gz file containing read-specific information 
   - genes.gz file
-  - Cell type file listing user-specified cell types of interest and the display color of each
+  - Cell type file listing user-specified cell types of interest and the display
+    color of each
   - Gene of interest
-  - Confidence interval (CI) for alternative exon consideration. Default value for
-    exon inclusion rate is .05 (5% < altExon inclusion < 95%)
+  - Optional: Confidence interval (CI) for alternative exon consideration.
+    Default value for exon inclusion rate is .05 (5% < altExon inclusion < 95%)
+  - Optional: Mismatch Cutoff to eliminate sequencing errors. Default value is
+    .05 (5% < mismatch inclusion < 95%)
   - Output directory in which the user wants output files stored
   - Optional: Mismatches file containing output from the MismatchFinder function
     (see Section 2). Default value is NULL
@@ -131,9 +140,10 @@ ScisorWiz_2File(gencodeAnno = "gencodeAnnoFile.gz", gffInput = "CagePolyA.gff.gz
 ##___________________________________OR____________________________________##
 
 ## Run command with plotting mismatches
-ScisorWiz_2File(gencodeAnno = "gencodeAnnoFile.gz", gffInput = "CagePolyA.gff.gz",
-                genesInput = "reads2genes.gz", cellTypeFile = "cellTypeFile_Snap25.tab",
-                gene = "Snap25", ci = .05, outputDir = "extdata/outputDir/",
+ScisorWiz_2File(gencodeAnno = "gencodeAnnoFile.gz",
+                gffInput = "CagePolyA.gff.gz", genesInput = "reads2genes.gz",
+                cellTypeFile = "cellTypeFile_Snap25.tab",gene = "Snap25",
+                ci = .05, mismatchCutoff = .05, outputDir = "extdata/outputDir/",
                 mismatchFile = "Snap25.mismatches.txt.gz")
 ```
 

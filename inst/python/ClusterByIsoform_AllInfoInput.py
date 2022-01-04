@@ -1,9 +1,23 @@
+#!/usr/bin/env python
+
+###############################################################################
+# Analyze data - Filter for gene, filter by cell type, remap gene locations,
+# separate out mismatches
+#   - Input: GENCODE annotation file, AllInfo file, cell type file, gene,
+#            alt exon inclusion interval (ci), output directory
+#   - Output: Many files used in the R script to visualize data
+#
+# Command: ./ClusterByIsoform_AllInfoInput.py GENCODE_Annotation.gtf AllInfo.gz
+#                               cellTypeFile.tab, gene_name, ci, outputDir
+#
+# by Alexander N. Stein
+################################################################################
+
 import sys
 import pandas as pd
 import gzip
 import os.path
 from os import path
-import time
 import re
 
 

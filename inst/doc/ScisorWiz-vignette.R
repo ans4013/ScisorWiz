@@ -17,17 +17,20 @@ library(ScisorWiz)
 #  
 #  ## Run command without plotting mismatches
 #  ScisorWiz_AllInfo(gencodeAnno = gencodeAnnoFile, AllInfoInput = allInfoFile,
-#                    cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1, ci = .05,
-#                    outputDir = "extdata/outputDir/")
+#                    cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1,
+#                    ci = .05, outputDir = "extdata/outputDir/")
 #  
 #  ##___________________________________OR____________________________________##
 #  
+#  # If the optional mismatchFinder function hasn't been run, the mismatches file
+#  # is located in extData/, rather than within the outputDir subdirectory
 #  mismatches <- system.file("extdata/", "outputDir/Snap25.mismatches.txt.gz",
 #                             package = "ScisorWiz")
 #  
 #  ## Run command with plotting mismatches
 #  ScisorWiz_AllInfo(gencodeAnno = gencodeAnnoFile, AllInfoInput = allInfoFile,
-#                    cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1, ci = .05
+#                    cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1,
+#                    ci = .05, mismatchCutoff = .05,
 #                    outputDir = "extdata/outputDir/", mismatchFile = mismatches)
 
 ## ----plot1, out.width = '60%', echo=F-----------------------------------------
@@ -44,9 +47,10 @@ knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_noMis.pdf")
 #  ##___________________________________OR____________________________________##
 #  
 #  ## Run command with plotting mismatches
-#  ScisorWiz_2File(gencodeAnno = "gencodeAnnoFile.gz", gffInput = "CagePolyA.gff.gz",
-#                  genesInput = "reads2genes.gz", cellTypeFile = "cellTypeFile_Snap25.tab",
-#                  gene = "Snap25", ci = .05, outputDir = "extdata/outputDir/",
+#  ScisorWiz_2File(gencodeAnno = "gencodeAnnoFile.gz",
+#                  gffInput = "CagePolyA.gff.gz", genesInput = "reads2genes.gz",
+#                  cellTypeFile = "cellTypeFile_Snap25.tab",gene = "Snap25",
+#                  ci = .05, mismatchCutoff = .05, outputDir = "extdata/outputDir/",
 #                  mismatchFile = "Snap25.mismatches.txt.gz")
 
 ## ----MismatchFinder, eval=FALSE, echo=TRUE------------------------------------

@@ -23,16 +23,16 @@ of reads of those celltypes for the output plot}
 \item{gene}{User-specified gene of interest}
 
 \item{ci}{User-specified confidence interval for reads to be considered
-alternate exons. Is .05 by default.}
+alternate exons. Default is .05.}
 
-\item{mismatchCutoff}{User-specified cutoff for SNV inclusion rate. Is .05 by
-default.}
+\item{mismatchCutoff}{User-specified cutoff for SNV inclusion rate. Default
+is .05.}
 
 \item{outputDir}{User-specified directory to store all output from the
 pipeline}
 
-\item{mismatchFile}{Output of MismatchFinder function if used. Is NULL by
-default.}
+\item{mismatchFile}{Output of MismatchFinder function if used. Default is
+NULL.}
 }
 \value{
 Plot visualizing isoform expression of the gene of interest among up

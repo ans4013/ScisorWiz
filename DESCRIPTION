@@ -1,7 +1,7 @@
 Package: ScisorWiz
 Type: Package
 Title: Visualizes isoforms of a gene across up to 6 cell types
-Version: 1.1.0
+Version: 1.1.2
 Author: Alexander Stein
 Maintainer: Alexander Stein <ans4013@med.cornell.edu>
 Description: The Scisor-Wiz package visualizes single-cell RNA long-read 
@@ -25,4 +25,4 @@ Language: en-US
 VignetteBuilder: knitr
 Suggests: rmarkdown, knitr
 NeedsCompilation: no
-Packaged: 2021-12-21 05:23:50 UTC; astei
+Packaged: 2022-01-04 17:53:21 UTC; astei
