@@ -21,8 +21,8 @@ library(ScisorWiz)
 The *ScisorWiz* package creates a plot utilizing single-cell long-read RNA sequencing data in order to display isoform expression differentiation across multiple cell types for a single gene.
 
 ## Software required
-  * samtools (for MismatchFinder function -- see Section 2 - Optional Preprocessing)
-  * python version >= 3.7 with the following libraries:
+  * samtools
+  * python version >= 3.7 with the following libraries
     * pandas
 
 ## Section 1 - Main workflow - Organize data and create the plot
@@ -58,7 +58,7 @@ Using AllInfo file output from the scisorseqr package, the user can choose the c
   - Optional: Mismatches file containing output from the MismatchFinder function
     (see Section 2). Default value is NULL
 
-\*Celltype file is __tab separated__ with each cell type and display color on a new line, and cell type names must be written exactly as they appear in the GENCODE file. The file looks like the following:
+\*Celltype file is tab separated with each cell type on a new line and cell type names must be written exactly as they appear in the GENCODE file. The file looks like the following:
 
 |  |  |
 |:----------------:|:--------------------:|
@@ -85,7 +85,7 @@ cTypeFile <- system.file("extdata/", "userInput/celltypeFile",
                          package = "ScisorWiz")
 
 ## Run command without plotting mismatches
-ScisorWiz_AllInfo(gencodeAnno = gencodeAnno, AllInfoInput = allInfoFile,
+ScisorWiz_AllInfo(gencodeAnno = gencodeAnnoFile, AllInfoInput = allInfoFile,
                   cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1,
                   ci = .05, outputDir = "extdata/outputDir/")
 
@@ -97,7 +97,7 @@ mismatches <- system.file("extdata/", "outputDir/Snap25.mismatches.txt.gz",
                            package = "ScisorWiz")
 
 ## Run command with plotting mismatches
-ScisorWiz_AllInfo(gencodeAnno = gencodeAnno, AllInfoInput = allInfoFile,
+ScisorWiz_AllInfo(gencodeAnno = gencodeAnnoFile, AllInfoInput = allInfoFile,
                   cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1,
                   ci = .05, mismatchCutoff = .05,
                   outputDir = "extdata/outputDir/", mismatchFile = mismatches)
@@ -146,7 +146,6 @@ ScisorWiz_2File(gencodeAnno = "gencodeAnnoFile.gz",
                 ci = .05, mismatchCutoff = .05, outputDir = "extdata/outputDir/",
                 mismatchFile = "Snap25.mismatches.txt.gz")
 ```
-**NOTE** The data included in the package is not for this function due to raw file size, to test ScisorWiz using included data, please refer to Pipeline Option 1 - ScisorWiz_AllInfo section example.
 
 
 ## Section 2 - Optional Pre-processing
