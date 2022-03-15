@@ -24,6 +24,8 @@ The *ScisorWiz* package creates a plot utilizing single-cell long-read RNA seque
   * samtools (for MismatchFinder function -- see Section 2 - Optional Preprocessing)
   * python version >= 3.7 with the following libraries:
     * pandas
+  * R version >= 3.5 with the following packages:
+    * hash
 
 ## Section 1 - Main workflow - Organize data and create the plot
 
