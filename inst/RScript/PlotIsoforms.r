@@ -3,16 +3,16 @@
 ###############################################################################
 # Visualize data read-by-read; option for different cluster methods, option to
 # plot genetic mismatches
-#   - Input: output file type, output file name, last figure,
-#            remapped anno file, cellTypeFileWithFileNames.tab, order.tab.gz,
-#            all5 file, altExons file, projection remap file, gene name,
+#   - Input: interactive option, output file name, remapped anno file,
+#            cellTypeFileWithFileNames.tab, order.tab.gz, all5 file,
+#            altExons file, projection remap file, gene name,
 #            cluster method, altExon inclusion cutoff (ci),
 #            mismatch inclusion cutoff (optional), plot output path,
 #            SNV file (optional), insertion file (optional),
 #            deletion file (optional)
 #   - Output: Plot of all isoforms of gene across all celltype choices
 #
-# Command: ./PlotIsoforms.r pdf, plot name, last figure, anno remap file,
+# Command: ./PlotIsoforms.r interactive option, plot name, anno remap file,
 #           cellTypeFilewithFileNames, order.tab.gz, all5 File, altExons file,
 #           projection remap file, gene name, cluster method, ci,
 #           mismatch inclusion cutoff, plotOutput, SNVFile, insertionsFile,
@@ -94,7 +94,7 @@ getClustering<-function(a, m, cluster, num) {
 getMismatches<-function(alignment, SNVs, insertions, deletions){
     reads2Mismatches = hash()
     # Enter removePath function to remove ".path1" if it exists in the readID
-    alignment <- removePath(alignment)
+    alignment <- removePath(get(alignment))
     # Get all mismatches for each read for the cell type
     for(i in 1:length(alignment[,9])){
         readID = as.list(strsplit(as.character(alignment[i,9]), ":"))[[1]]
@@ -109,6 +109,7 @@ getMismatches<-function(alignment, SNVs, insertions, deletions){
 
 # Function to remove ".path1" from the readID strings
 removePath<-function(alignments){
+    #print(get(alignments))
     alignments[,9]=as.vector(alignments[,9])
     # Iterate through all readIDs in table
     for(i in 1:length(alignments[,9])){
@@ -133,7 +134,7 @@ countMismatches<-function(mismatch, totalReads, mismatchCutoff){
     for(i in 1:length(SNVtmp)){
         snvs <- as.list(strsplit(as.character(SNVtmp[i]), ","))
         for(i in 1:length(snvs[[1]])){
-            SNVList <- append(SNVList, as.numeric(snvs[[1]][i]))
+            suppressWarnings(SNVList <- append(SNVList, as.numeric(snvs[[1]][i])))
         }
     }
 
@@ -161,7 +162,7 @@ countMismatches<-function(mismatch, totalReads, mismatchCutoff){
     for(i in 1:length(insTmp)){
         ins <- as.list(strsplit(as.character(insTmp[i]), ","))
         for(i in 1:length(ins[[1]])){
-            insList <- append(insList, as.numeric(ins[[1]][i]))
+            suppressWarnings(insList <- append(insList, as.numeric(ins[[1]][i])))
         }
     }
 
@@ -189,7 +190,7 @@ countMismatches<-function(mismatch, totalReads, mismatchCutoff){
     for(i in 1:length(delTmp)){
         del <- as.list(strsplit(as.character(delTmp[i]), ","))
         for(i in 1:length(del[[1]])){
-            delList <- append(delList, as.numeric(del[[1]][i]))
+            suppressWarnings(delList <- append(delList, as.numeric(del[[1]][i])))
         }
     }
 
@@ -242,8 +243,14 @@ countMismatches<-function(mismatch, totalReads, mismatchCutoff){
     return(includedMis)
 }
 
+#getWindowStart<-function(windowStart, ){
+#
+#}
+
 # Function to plot each read from a specific cell type
-plotReads<-function(alignments,startLineNumber,numAlignedReads,alignmentHeader,alignedReads,from,to,center,cexT,colReads,localExonRadius,mismatchPos,tar1,tar2,totalCount,CI,altExons,specialColor){
+plotReads<-function(alignments,startLineNumber,numAlignedReads,alignmentHeader,
+                    alignedReads,from,to,center,cexT,colReads,localExonRadius,
+                    mismatchPos,tar1,tar2,totalCount,CI,altExons,specialColor){
     # Create background
     #arrowDis=(max(alignments[,5])-min(alignments[,4]))/40;     #testing what would happen if this was removed
     #arrowPos=min(alignments[,4])+c(1:40)*arrowDis;     #testing what would happen if this was removed
@@ -390,35 +397,76 @@ plotReads<-function(alignments,startLineNumber,numAlignedReads,alignmentHeader,a
     return(lineNumber);
 }
 
-
 # Main plotting function
-plotGenes<-function(annoGTF,alignedGFF1,alignedGFF2,alignedGFF3,alignedGFF4,alignedGFF5,alignedGFF6,annotationHeader,
-                    alignmentHeader1,alignmentHeader2,alignmentHeader3,alignmentHeader4,alignmentHeader5,alignmentHeader6,
-                    colAnno="darkgray",colReads1="steelblue4",colReads2="darkorange",colReads3="black",colReads4="black",
-                    colReads5="black",colReads6="black",cexT=1,SNVFile,insertFile,deleteFile,to,alignedReads1,alignedReads2,alignedReads3,alignedReads4,
-                    alignedReads5,alignedReads6,target1,target2,drawAxis,altExons,projections,readLengths,CI,mismatchCutoff,specialColor){
+plotGenes<-function(annoGTF, aNames, annotationHeader, headerNames, colAnno, colReads,
+                    cexT=1, SNVFile, insertFile, deleteFile, to, orderNames, windowStart,
+                    windowEnd, drawAxis, altExons, projections, readLengths, CI,
+                    mismatchCutoff, specialColor, numCT){
     cat("## starting plotGenes\n")
     anno=read.table(annoGTF)
 
     cat("## reading alignments\n")
     emptyDF=data.frame(factor(),factor(),factor(),integer(),integer(),factor(),factor(),factor(),factor())
-    alignments1=tryCatch({res=read.table(alignedGFF1, sep="\t")}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); })
-    alignments2=tryCatch({res=read.table(alignedGFF2, sep="\t")}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); })
-    alignments3=tryCatch({res=read.table(alignedGFF3, sep="\t")}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); })
-    alignments4=tryCatch({res=read.table(alignedGFF4, sep="\t")}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); })
-    alignments5=tryCatch({res=read.table(alignedGFF5, sep="\t")}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); })
-    alignments6=tryCatch({res=read.table(alignedGFF6, sep="\t")}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); })
 
-    from = 100000
-    plotEnd = 0
-    # Find outer bounds of the plot
-    for(i in 1:6) {
-        alignment = paste0("alignments", i)
-        alignments = eval(parse(text = alignment))
-        alignedMin = min(alignments$V4)
-        alignedMax = max(alignments$V5)
-        from = min(from, alignedMin)
-        plotEnd = max(plotEnd, alignedMax)
+    #for(i in 1:numCT){
+    #    alignmentNames <- paste("alignments", i, sep='')
+    #}
+    #for(i in 1:numCT){
+    #    assign(alignmentNames[i], tryCatch({res=read.table(get(alignedGFFs[i]), sep="\t",
+    #                                                       colClasses = c("character", "character", "character", "integer", "integer", "character", "character", "character", "character", "integer", "integer", "integer", "integer", "character"))},
+    #                                  warning = function(w) {cat("a warning was raised\n");
+    #                                      return(emptyDF); },
+    #                                  error = function(e) {return(emptyDF); }))
+    #}
+    #print(paste(alignmentNames[7], get(alignmentNames[7])))
+
+    #alignments1=tryCatch({res=read.table(alignedGFF1, sep="\t")},
+    #                     warning = function(w) {cat("a warning was raised\n");
+    #                         return(emptyDF); },
+    #                     error = function(e) {return(emptyDF); })
+    #alignments2=tryCatch({res=read.table(alignedGFF2, sep="\t")},
+    #                     warning = function(w) {cat("a warning was raised\n");
+    #                         return(emptyDF); },
+    #                     error = function(e) {return(emptyDF); })
+    #alignments3=tryCatch({res=read.table(alignedGFF3, sep="\t")},
+    #                     warning = function(w) {cat("a warning was raised\n");
+    #                         return(emptyDF); },
+    #                     error = function(e) {return(emptyDF); })
+    #alignments4=tryCatch({res=read.table(alignedGFF4, sep="\t")},
+    #                     warning = function(w) {cat("a warning was raised\n");
+    #                         return(emptyDF); },
+    #                     error = function(e) {return(emptyDF); })
+    #alignments5=tryCatch({res=read.table(alignedGFF5, sep="\t")},
+    #                     warning = function(w) {cat("a warning was raised\n");
+    #                         return(emptyDF); },
+    #                     error = function(e) {return(emptyDF); })
+    #alignments6=tryCatch({res=read.table(alignedGFF6, sep="\t")},
+    #                     warning = function(w) {cat("a warning was raised\n");
+    #                         return(emptyDF); },
+    #                     error = function(e) {return(emptyDF); })
+
+    if(is.na(windowStart)){
+        from = 100000
+        plotEnd = 0
+        # Find outer bounds of the plot
+        for(i in 1:numCT ) {
+            #alignment = paste0("alignments", i)
+            #alignments = eval(parse(text = alignment))
+            alignedMin = min(get(aNames[i])$V4)
+            alignedMax = max(get(aNames[i])$V5)
+            from = min(from, alignedMin)
+            plotEnd = max(plotEnd, alignedMax)
+        }
+    }
+    else{
+        for(i in 1:nrow(projections)){
+            if(i == windowStart){
+                from = projections[i,5]
+            }
+            else if(i == windowEnd){
+                plotEnd = projections[i,6]
+            }
+        }
     }
 
     # Add 100 to end of plot for space purposes
@@ -438,7 +486,6 @@ plotGenes<-function(annoGTF,alignedGFF1,alignedGFF2,alignedGFF3,alignedGFF4,alig
     cat("## the general plot\n");
     annoTransIndexes=which(anno[,3]=="transcript");
     numAnnoTrans=length(annoTransIndexes);
-    cat("numAnnoTrans=",numAnnoTrans,"\n");
     y=anno;
     for(i in 1:length(annoTransIndexes)){
         x=anno[which(anno[,3]=="transcript" & anno[,12]==anno[i,12]),]
@@ -449,18 +496,23 @@ plotGenes<-function(annoGTF,alignedGFF1,alignedGFF2,alignedGFF3,alignedGFF4,alig
     anno=y
     annoTransIndexes=which(anno[,3]=="transcript");
     numAnnoTrans=length(annoTransIndexes);
-    cat("numAnnoTrans=",numAnnoTrans,"\n");
+    cat("numAnnoTrans =",numAnnoTrans,"\n");
 
     # Set width and center of plot
     showLength=to-from+1;
     center=(from+to)/2
 
-    reads2Mismatches1 = hash()
-    reads2Mismatches2 = hash()
-    reads2Mismatches3 = hash()
-    reads2Mismatches4 = hash()
-    reads2Mismatches5 = hash()
-    reads2Mismatches6 = hash()
+    r2MNames <- paste("reads2Mismatches", 1:numCT, sep='')
+    for(i in 1:numCT){
+        assign(r2MNames[i], hash())
+    }
+
+    #reads2Mismatches1 = hash()
+    #reads2Mismatches2 = hash()
+    #reads2Mismatches3 = hash()
+    #reads2Mismatches4 = hash()
+    #reads2Mismatches5 = hash()
+    #reads2Mismatches6 = hash()
 
     # If user chose to plot mismatches, enter this step.
     if(length(args) > 14){
@@ -472,24 +524,44 @@ plotGenes<-function(annoGTF,alignedGFF1,alignedGFF2,alignedGFF3,alignedGFF4,alig
 
         # Get mismatches for each cell type
         cat("Getting SNVs, insertions, and deletions")
-        reads2Mismatches1 = getMismatches(alignments1, SNVTable, insertTable, deleteTable)
-        reads2Mismatches2 = getMismatches(alignments2, SNVTable, insertTable, deleteTable)
-        reads2Mismatches3 = getMismatches(alignments3, SNVTable, insertTable, deleteTable)
-        reads2Mismatches4 = getMismatches(alignments4, SNVTable, insertTable, deleteTable)
-        reads2Mismatches5 = getMismatches(alignments5, SNVTable, insertTable, deleteTable)
-        reads2Mismatches6 = getMismatches(alignments6, SNVTable, insertTable, deleteTable)
+        for(i in 1:numCT){
+            assign(r2MNames[i], getMismatches(aNames[i], SNVTable, insertTable, deleteTable))
+        }
+        #reads2Mismatches1 = getMismatches(alignments1, SNVTable, insertTable, deleteTable)
+        #reads2Mismatches2 = getMismatches(alignments2, SNVTable, insertTable, deleteTable)
+        #reads2Mismatches3 = getMismatches(alignments3, SNVTable, insertTable, deleteTable)
+        #reads2Mismatches4 = getMismatches(alignments4, SNVTable, insertTable, deleteTable)
+        #reads2Mismatches5 = getMismatches(alignments5, SNVTable, insertTable, deleteTable)
+        #reads2Mismatches6 = getMismatches(alignments6, SNVTable, insertTable, deleteTable)
+
+        #print(paste(r2MNames[7], get(r2MNames[7])))
+        #print("BING BONG")
     }
 
-    numAlignedReads1=length(alignedReads1);
-    numAlignedReads2=length(alignedReads2);
-    numAlignedReads3=length(alignedReads3);
-    numAlignedReads4=length(alignedReads4);
-    numAlignedReads5=length(alignedReads5);
-    numAlignedReads6=length(alignedReads6);
+    numAlignedReads <- paste("numAlignedReads", 1:numCT, sep='')
+    for(i in 1:numCT){
+        assign(numAlignedReads[i], length(get(orderNames[i])))
+    }
+
+    #numAlignedReads1=length(alignedReads1);
+    #numAlignedReads2=length(alignedReads2);
+    #numAlignedReads3=length(alignedReads3);
+    #numAlignedReads4=length(alignedReads4);
+    #numAlignedReads5=length(alignedReads5);
+    #numAlignedReads6=length(alignedReads6);
 
     # Start plotting from top down
     cat("## the plot\n");
-    ytop= 60 + 2*numAlignedReads1+25 + 2*numAlignedReads2+25 + 2*numAlignedReads3+25 + 2*numAlignedReads4+25 + 2*numAlignedReads5+25 + 2*numAlignedReads6+25  +  (12*numAnnoTrans) + 60
+    #ytop= 60 + 2*numAlignedReads1+25 + 2*numAlignedReads2+25 + 2*numAlignedReads3+25 +
+    #    2*numAlignedReads4+25 + 2*numAlignedReads5+25 + 2*numAlignedReads6+25 +
+    #    (12*numAnnoTrans) + 60
+    ytop = 120 + (12*numAnnoTrans)
+    for(i in 1:numCT){
+        #print(get(numAlignedReads[i]))
+        ytop = ytop + (2*get(numAlignedReads[i])) + 25
+    }
+    #print(paste("ytop", ytop))
+
     plot(c(from,to),c(1,ytop),col="white",axes=FALSE,xlab="",ylab="");
 
     xPositions=c((from-100):(to+100));
@@ -504,7 +576,7 @@ plotGenes<-function(annoGTF,alignedGFF1,alignedGFF2,alignedGFF3,alignedGFF4,alig
     axisPoints=c(from:to);
     axisPoints=axisPoints[which(axisPoints %% 2000 ==0)];
     # Plotting differently for different outputs. Default (hardcoded) for pdf
-    if(eps=="eps" | eps=="pdf"){
+    if(interactive =="n"){
         axisOffset=50;
         localExonRadius=0.9;
     }
@@ -526,48 +598,55 @@ plotGenes<-function(annoGTF,alignedGFF1,alignedGFF2,alignedGFF3,alignedGFF4,alig
 
     # Begin plotting cell types, adding space to prevent overlap of cell type
     # names and reads
-    cat("# the aligned reads 1\n");
-    cat("enter with ",ytop,"; using ", numAlignedReads1,"reads\n")
-    newLineNumber=plotReads(alignments1,ytop,numAlignedReads1,alignmentHeader1,alignedReads1,from,to,center,cexT,colReads1,
-                            localExonRadius,reads2Mismatches1,target1,target2,readLengths[[1]],CI,altExons,specialColor);
 
-    cat("# the aligned reads 2\n");
-    ytop=ytop- (2*numAlignedReads1)-40;
-    cat("enter with ",ytop,"; using ", numAlignedReads2,"reads\n")
-    newLineNumber=plotReads(alignments2,ytop,numAlignedReads2,alignmentHeader2,alignedReads2,from,to,center,cexT,colReads2,
-                            localExonRadius,reads2Mismatches2,target1,target2,readLengths[[2]],CI,altExons,specialColor);
+    for(i in 1:numCT){
+        cat("# the aligned reads",i, "\n");
+        cat("enter with ",ytop,"; using ", get(numAlignedReads[i]),"reads\n")
+        newLineNumber = plotReads(get(aNames[i]), ytop, get(numAlignedReads[i]),
+                                  get(headerNames[i]), get(orderNames[i]), from, to,
+                                  center, cexT, get(colReads[i]), localExonRadius,
+                                  get(r2MNames[i]), target1, target2,
+                                  readLengths[[i]], CI, altExons, specialColor);
+        ytop=ytop - (2*get(numAlignedReads[i])) - 40
+    }
 
-    cat("# the aligned reads 3\n");
-    ytop=ytop- (2*numAlignedReads2)-40;
-    cat("enter with ",ytop,"; using ", numAlignedReads3,"reads\n")
-    newLineNumber=plotReads(alignments3,ytop,numAlignedReads3,alignmentHeader3,alignedReads3,from,to,center,cexT,colReads3,
-                            localExonRadius,reads2Mismatches3,target1,target2,readLengths[[3]],CI,altExons,specialColor);
+    #cat("# the aligned reads 2\n");
+    #ytop=ytop- (2*numAlignedReads1)-40;
+    #cat("enter with ",ytop,"; using ", numAlignedReads2,"reads\n")
+    #newLineNumber=plotReads(alignments2,ytop,numAlignedReads2,alignmentHeader2,alignedReads2,from,to,center,cexT,colReads2,
+    #                        localExonRadius,reads2Mismatches2,target1,target2,readLengths[[2]],CI,altExons,specialColor);
 
-    cat("# the aligned reads 4\n");
-    ytop=ytop- (2*numAlignedReads3)-40;
-    cat("enter with ",ytop ,"; using ", numAlignedReads4,"reads\n")
-    newLineNumber=plotReads(alignments4,ytop,numAlignedReads4,alignmentHeader4,alignedReads4,from,to,center,cexT,colReads4,
-                            localExonRadius,reads2Mismatches4,target1,target2,readLengths[[4]],CI,altExons,specialColor);
+    #cat("# the aligned reads 3\n");
+    #ytop=ytop- (2*numAlignedReads2)-40;
+    #cat("enter with ",ytop,"; using ", numAlignedReads3,"reads\n")
+    #newLineNumber=plotReads(alignments3,ytop,numAlignedReads3,alignmentHeader3,alignedReads3,from,to,center,cexT,colReads3,
+    #                        localExonRadius,reads2Mismatches3,target1,target2,readLengths[[3]],CI,altExons,specialColor);
 
-    cat("# the aligned reads 5\n");
-    ytop=ytop- (2*numAlignedReads4)-40;
-    cat("enter with ",ytop,"; using ", numAlignedReads5,"reads\n")
-    newLineNumber=plotReads(alignments5,ytop,numAlignedReads5,alignmentHeader5,alignedReads5,from,to,center,cexT,colReads5,
-                            localExonRadius,reads2Mismatches5,target1,target2,readLengths[[5]],CI,altExons,specialColor);
+    #cat("# the aligned reads 4\n");
+    #ytop=ytop- (2*numAlignedReads3)-40;
+    #cat("enter with ",ytop ,"; using ", numAlignedReads4,"reads\n")
+    #newLineNumber=plotReads(alignments4,ytop,numAlignedReads4,alignmentHeader4,alignedReads4,from,to,center,cexT,colReads4,
+    #                        localExonRadius,reads2Mismatches4,target1,target2,readLengths[[4]],CI,altExons,specialColor);
 
-    cat("# the aligned reads 6\n");
-    ytop=ytop- (2*numAlignedReads5)-40;
-    cat("enter with ",ytop,"; using ", numAlignedReads6,"reads\n")
-    newLineNumber=plotReads(alignments6,ytop,numAlignedReads6,alignmentHeader6,alignedReads6,from,to,center,cexT,colReads6,
-                            localExonRadius,reads2Mismatches6,target1,target2,readLengths[[6]],CI,altExons,specialColor);
+    #cat("# the aligned reads 5\n");
+    #ytop=ytop- (2*numAlignedReads4)-40;
+    #cat("enter with ",ytop,"; using ", numAlignedReads5,"reads\n")
+    #newLineNumber=plotReads(alignments5,ytop,numAlignedReads5,alignmentHeader5,alignedReads5,from,to,center,cexT,colReads5,
+    #                        localExonRadius,reads2Mismatches5,target1,target2,readLengths[[5]],CI,altExons,specialColor);
+
+    #cat("# the aligned reads 6\n");
+    #ytop=ytop- (2*numAlignedReads5)-40;
+    #cat("enter with ",ytop,"; using ", numAlignedReads6,"reads\n")
+    #newLineNumber=plotReads(alignments6,ytop,numAlignedReads6,alignmentHeader6,alignedReads6,from,to,center,cexT,colReads6,
+    #                        localExonRadius,reads2Mismatches6,target1,target2,readLengths[[6]],CI,altExons,specialColor);
 
     cat("# the annotated transcripts\n")
-    ytop=ytop- (2*numAlignedReads6)-40;
+    #ytop=ytop- (2*numAlignedReads6)-40;
     cat("enter with ",ytop,";\n")
 
     lineNumber=ytop
     lineNumber=lineNumber-10-5
-    if(eps=="jpg"){
+    if(interactive == "y"){
         extraShift=500;
     }
     else{
@@ -628,37 +707,39 @@ plotGenes<-function(annoGTF,alignedGFF1,alignedGFF2,alignedGFF3,alignedGFF4,alig
 # 0. reading parameters and data
 args<-commandArgs(trailingOnly=TRUE);
 
-eps=args[1];
-cat("eps =", eps,"\n");
+interactive=args[1];
+cat("interactive =", interactive,"\n");
 
 outGraphFileName=args[2];
 cat("outGraphFileName =", outGraphFileName,"\n");
 
-lastFigure=as.numeric(args[3]);
-cat("lastFigure =", lastFigure,"\n");
-
-exampleAnnotationGTF=args[4];
+exampleAnnotationGTF=args[3];
 cat("exampleAnnotationGTF =", exampleAnnotationGTF,"\n");
 
-cellTypeFileWithFileNames=args[5];
+cellTypeFileWithFileNames=args[4];
 cat("cellTypeFileWithFileNames =", cellTypeFileWithFileNames,"\n");
 
-orderMatrixFile=args[6];
+cellTypeTableWithFileNames=read.table(cellTypeFileWithFileNames,sep="\t")
+
+# Number of cell types listed
+numCT <- nrow(cellTypeTableWithFileNames)
+
+orderMatrixFile=args[5];
 cat("orderMatrixFile =", orderMatrixFile,"\n");
 
-alignedReadsFile=args[7];
+alignedReadsFile=args[6];
 cat("alignedReadsFile =", alignedReadsFile, "\n");
 
-altExonsFile=args[8]
+altExonsFile=args[7]
 cat("altExonsFile =", altExonsFile, "\n")
 
-projFile=args[9]
+projFile=args[8]
 cat("projectionFile =", projFile, "\n")
 
-geneName=args[10];
+geneName=args[9];
 cat("geneName =", geneName,"\n");
 
-cluster=args[11]
+cluster=args[10]
 if(cluster == 1){
     cluster = "Intron"
 }
@@ -673,30 +754,54 @@ if(cluster == 4){
 }
 cat("Cluster method =", cluster, "\n")
 
-CI=args[12];
+CI=args[11];
 CI = format(round(as.integer(CI), 2), nsmall=2)
 upper = 1 - as.double(CI)
 upper = format(round(upper, 2), nsmall=2)
 cat("Confidence Interval = ", as.double(CI), "-", as.double(upper),"\n");
 
-mismatchCutoff=args[13]
+mismatchCutoff=args[12]
 cat("Mismatch Cutoff = ", mismatchCutoff, "\n")
 
-output=args[14]
+output=args[13]
 outputDir = paste0(output,geneName)
 cat("outputDir = ", outputDir, "\n");
 
-# If user wants mismatches plotted, length of the arguments will be <=14, if
+# If user wants to zoom in on a specific window, but doesn't want to plot
+# mismatches, the length of arguments will be 16, enter this step
+if(length(args) == 15){
+    windowStart=args[14]
+    windowEnd=args[15]
+} else if(length(args) == 18){
+    windowStart=args[17]
+    windowEnd=args[18]
+} else {
+    windowStart=NA
+    windowEnd=NA
+}
+
+# If user wants mismatches plotted, length of the arguments will be >=17, if
 # there are more, then enter this step
-if(length(args) > 14){
-    SNVFile=args[15]
+if(length(args) >= 16){
+    SNVFile=args[14]
     cat("SNVFile =", SNVFile, "\n")
 
-    insertFile=args[16]
+    insertFile=args[15]
     cat("insertFile =", insertFile, "\n")
 
-    deleteFile=args[17]
+    deleteFile=args[16]
     cat("deleteFile =", deleteFile, "\n")
+
+    # If user wants to zoom in on a specific window and want mismatches plotted,
+    # the length of arguments will be > 17, enter this step
+    #if(length(args) > 17){
+    #    windowStart=args[18]
+    #    windowEnd=args[19]
+    #}
+    #else{
+    #    windowStart=NA
+    #    windowEnd=NA
+    #}
 }
 
 #
@@ -715,9 +820,31 @@ subfigureNames=c("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o");
 
 cat("# 2. the name of the output-file\n");
 
-if(eps=="pdf"){
+if(interactive == "y"){
+    outGraphFileNameJpg=paste(outputDir,paste(outGraphFileName,"jpg",sep="."),sep="/");
+    jpeg(file=outGraphFileNameJpg,width=8,height=numCT*2,unit="in",res=1200)
+    cexMain=0.9;
+    cexLab=1;
+    legendscale=0.9
+    marVector=c(2, 2, 2, 1) +0.1;
+    mypadj=-3;
+    myadj=2.5;
+    omaVector=c(2,2,2,2)-1;
+    mysubfigureLabelCex=1.2;
+    mgpVector=c(1.2,0.5,0);
+    mycex=2.5;
+    cexText=0.65;
+    mylwd=1.25;
+    exampleY=0.49;
+    box1X=c(-0.1,0.6);
+    box1Y=c(0.0,9);
+    box2X=c(8.3,9.7);
+    box2Y=c(0.0,9);
+    padjOffsetForFigure4=9.5
+    xMtextLine=0.5;
+} else {
     pdfWidth=11;
-    pdfHeight=8;
+    pdfHeight=numCT*2;
     outGraphFileNamePdf=paste(outputDir,paste(outGraphFileName,"pdf",sep="."),sep = "/");
     pdf(file=outGraphFileNamePdf,width=pdfWidth,height=pdfHeight,title="all exons");
     cexMain=1.8;
@@ -740,199 +867,154 @@ if(eps=="pdf"){
     xMtextLine=2.3;
 }
 
-
-if(eps=="eps"){
-    epsWidth=11.4;
-    epsHeight=10;
-    outGraphFileNameEps=paste(outputDir,paste(outGraphFileName,"eps",sep="."),sep="/");
-    postscript(file=outGraphFileNameEps,width=epsWidth,height=epsHeight,title="",horizontal=T);
-    cexMain=2.1;
-    cexLab=2.1;
-    legendscale=2.5;
-    marVector=c(4, 4, 4, 2) +0.1;
-    mypadj=-3.5;
-    mycex=2;
-    cexText=1.4;
-    myadj=2;
-    omaVector=c(1,1,1,3);
-    mysubfigureLabelCex=2.5;
-    mgpVector=c(2.6,0.9,0);
-    mylwd=3.5;
-    exampleY=0.495;
-    box1X=c(0.4,1.1);
-    box1Y=c(0.8,10);
-    box2X=c(8.25,9.5);
-    box2Y=c(0.8,10);
-    xMtextLine=1.4;
-    padjOffsetForFigure4=8.5;
-}
-
-if(eps=="png"){
-    pngWidth=1080;
-    pngHeight=820;
-    outGraphFileNamePng=paste(outputDir,paste(outGraphFileName,"png",sep="."),sep="/");
-    png(file=outGraphFileNamePng,width=pngWidth,height=pngHeight,units = "px");
-    cexMain=2.2;
-    cexLab=2.5;
-    legendscale=2.5
-    marVector=c(6, 6, 4, 2) +0.1;
-    mypadj=-12.0;
-    mycex=2.2;
-    cexText=1.6;
-    myadj=1.5;
-    omaVector=c(3,2,3,3);
-    mysubfigureLabelCex=3.2;
-    mgpVector=c(3,1,0)
-    mylwd=4.5;
-    exampleY=0.495;
-    box1X=c(0.7,1.4);
-    box1Y=c(0.8,8.2);
-    box2X=c(8.1,9.5);
-    box2Y=c(0.8,8.2);
-    padjOffsetForFigure4=9.5;
-    xMtextLine=0.6;
-}
-
-if(eps=="jpg"){
-    outGraphFileNameJpg=paste(outputDir,paste(outGraphFileName,"jpg",sep="."),sep="/");
-    jpeg(file=outGraphFileNameJpg,width=5,height=4,unit="in",res=1200)
-    cexMain=0.8;
-    cexLab=0.8;
-    legendscale=0.8
-    marVector=c(2,2,2,1)+0.1;
-    mypadj=-3;
-    myadj=2.5;
-    omaVector=c(2,2,2,2)-1;
-    mysubfigureLabelCex=1.2;
-    mgpVector=c(0.95,0.3,0);
-    mycex=2.5;
-    cexText=0.65;
-    mylwd=1.6;
-    exampleY=0.49;
-    box1X=c(-0.1,0.6);
-    box1Y=c(0.0,9);
-    box2X=c(8.3,9.7);
-    box2Y=c(0.0,9);
-    padjOffsetForFigure4=9.5
-    xMtextLine=0.5;
-}
-
-if(eps!="eps" && eps!="png" && eps!="jpg" && eps!="pdf"){
-    stop(eps, " is not a suppoted file format\n")
-}
-
-
 layout(matrix(c(1,1,3,3,3,3,3,3,
                 1,1,3,3,3,3,3,3,
                 1,1,3,3,3,3,3,3,
                 2,2,3,3,3,3,3,3,
                 2,2,3,3,3,3,3,3,
-                2,2,3,3,3,3,3,3,
-                4,4,5,5,6,6,7,7),nrow=7,ncol=8,byrow=TRUE));
+                2,2,3,3,3,3,3,3),nrow=6,ncol=8,byrow=TRUE));
 
 
-
-par(mar=marVector)
-par(oma= omaVector);
+par(mar = marVector);
+par(oma = omaVector);
 ########################################
 # 3. parsing data and plotting:
 cat("# 3. parsing data and plotting:\n");
 
+plot(c(1:10),c(1:10),col="white",xlab="",ylab="",main="",axes=FALSE)
+plot(c(1:10),c(1:10),col="white",xlab="",ylab="",main="",axes=FALSE)
 
+cat("number of cell types:", numCT, "\n")
 
-if(lastFigure>=1){
-    plot(c(1:10),c(1:10),col="white",xlab="",ylab="",main="",axes=FALSE)
-    plot(c(1:10),c(1:10),col="white",xlab="",ylab="",main="",axes=FALSE)
+emptyDF=data.frame(factor(),factor(),factor(),integer(),integer(),factor(),factor(),factor(),factor())
+
+# Get the alignments using names stored in the cellTypeTableWithFileNames
+# file for each cell type.
+if(interactive == "y"){
+    par(mar = marVector-c(1.5,2,2,1))
+} else{
+    par(mar = marVector-c(3.5,4,4,2))
 }
 
-if(lastFigure>=3){
-    #cat("############################################## example\n");
-
-    cellTypeTableWithFileNames=read.table(cellTypeFileWithFileNames,sep="\t")
-
-    emptyDF=data.frame(factor(),factor(),factor(),integer(),integer(),factor(),factor(),factor(),factor())
-
-    # Get the alignments using names stored in the cellTypeTableWithFileNames
-    # file for each cell type.
-    par(mar=marVector-c(3.5,4,4,2))
-    cat("reading", as.character(cellTypeTableWithFileNames[1,1]), "data\n")
-    a1=tryCatch({res=read.table(as.character(cellTypeTableWithFileNames[1,2]))}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); })
-    #print(dim(a1))
-
-     cat("reading", as.character(cellTypeTableWithFileNames[2,1]), "data\n")
-    a2=tryCatch({res=read.table(as.character(cellTypeTableWithFileNames[2,2]))}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); })
-    #print(dim(a2))
-
-    cat("reading", as.character(cellTypeTableWithFileNames[3,1]), "data\n")
-    a3=tryCatch({res=read.table(as.character(cellTypeTableWithFileNames[3,2]))}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); })
-    #print(dim(a3))
-
-    cat("reading", as.character(cellTypeTableWithFileNames[4,1]), "data\n")
-    a4=tryCatch({res=read.table(as.character(cellTypeTableWithFileNames[4,2]))}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); })
-    #print(dim(a4))
-
-    cat("reading", as.character(cellTypeTableWithFileNames[5,1]), "data\n")
-    a5=tryCatch({res=read.table(as.character(cellTypeTableWithFileNames[5,2]))}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); })
-    #print(dim(a5))
-
-    cat("reading", as.character(cellTypeTableWithFileNames[6,1]), "data\n")
-    a6=tryCatch({res=read.table(as.character(cellTypeTableWithFileNames[6,2]))}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); }) #, finally = {cat("try-catch done\n")})
-    #print(dim(a6))
-
-    cat("reading in data\n")
-    orderMatrix=read.table(orderMatrixFile);
-    orderMatrixSub=orderMatrix
-    m=as.data.frame(orderMatrixSub[,2])
-    rownames(m)=orderMatrixSub[,1]
-    alignedReads=read.table(alignedReadsFile, sep = "\t");
-    altExons=read.table(altExonsFile)
-    projections=read.table(projFile)
-
-    # Get only sections which are exonic and find position of last base of exons
-    # in data
-    projected=projections[which(projections[,4]=="exonic"),]
-    rightPlotEnd = max(projected[,6])
-
-    # Cluster the data if user specified via AllInfo path. Default is 1 (intron
-    # chain).
-    order1 <- getClustering(a1, m, cluster, 1)
-    order2 <- getClustering(a2, m, cluster, 2)
-    order3 <- getClustering(a3, m, cluster, 3)
-    order4 <- getClustering(a4, m, cluster, 4)
-    order5 <- getClustering(a5, m, cluster, 5)
-    order6 <- getClustering(a6, m, cluster, 6)
-
-    # Get number of reads for total read count used in countMismatches function
-    readLengths <- list()
-    readOrder1=rownames(m)[which(rownames(m) %in% a1[,9])]
-    readLengths <- append(readLengths, length(readOrder1))
-    readOrder2=rownames(m)[which(rownames(m) %in% a2[,9])]
-    readLengths <- append(readLengths, length(readOrder2))
-    readOrder3=rownames(m)[which(rownames(m) %in% a3[,9])]
-    readLengths <- append(readLengths, length(readOrder3))
-    readOrder4=rownames(m)[which(rownames(m) %in% a4[,9])]
-    readLengths <- append(readLengths, length(readOrder4))
-    readOrder5=rownames(m)[which(rownames(m) %in% a5[,9])]
-    readLengths <- append(readLengths, length(readOrder5))
-    readOrder6=rownames(m)[which(rownames(m) %in% a6[,9])]
-    readLengths <- append(readLengths, length(readOrder6))
-
-    # Call to plotting function
-    plotGenes(annoGTF=exampleAnnotationGTF,alignedGFF1=as.character(cellTypeTableWithFileNames[1,2]),
-              alignedGFF2=as.character(cellTypeTableWithFileNames[2,2]),alignedGFF3=as.character(cellTypeTableWithFileNames[3,2]),
-              alignedGFF4=as.character(cellTypeTableWithFileNames[4,2]),alignedGFF5=as.character(cellTypeTableWithFileNames[5,2]),
-              alignedGFF6=as.character(cellTypeTableWithFileNames[6,2]),annotationHeader="Gencode annotation",
-              alignmentHeader1=as.character(cellTypeTableWithFileNames[1,3]), alignmentHeader2=as.character(cellTypeTableWithFileNames[2,3]),
-              alignmentHeader3=as.character(cellTypeTableWithFileNames[3,3]), alignmentHeader4=as.character(cellTypeTableWithFileNames[4,3]),
-              alignmentHeader5=as.character(cellTypeTableWithFileNames[5,3]),alignmentHeader6=as.character(cellTypeTableWithFileNames[6,3]),
-              colAnno="black",colReads1=as.character(cellTypeTableWithFileNames[1,4]),colReads2=as.character(cellTypeTableWithFileNames[2,4]),
-              colReads3=as.character(cellTypeTableWithFileNames[3,4]),colReads4=as.character(cellTypeTableWithFileNames[4,4]),
-              colReads5=as.character(cellTypeTableWithFileNames[5,4]),colReads6=as.character(cellTypeTableWithFileNames[6,4]),cexT=mycex,
-              SNVFile,insertFile,deleteFile,rightPlotEnd,alignedReads1=order1,alignedReads2=order2,alignedReads3=order3,alignedReads4=order4,alignedReads5=order5,
-              alignedReads6=order6,56889953,56890775,drawAxis=FALSE,altExons=altExons,projections=projections,readLengths=readLengths,
-              CI=CI,mismatchCutoff,specialColor="darkorange");
-    warnings()
+aNames <- paste('a',1:numCT,sep='')
+for(i in 1:numCT){
+    cat("reading", as.character(cellTypeTableWithFileNames[i,1]), "data\n")
+    assign(aNames[i], tryCatch({res=read.table(as.character(cellTypeTableWithFileNames[i,2]))}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); }))
+    #print(dim(get(aNames[i])))
 }
+#print(get(aNames[i]))
+#cat("reading", as.character(cellTypeTableWithFileNames[2,1]), "data\n")
+#a2=tryCatch({res=read.table(as.character(cellTypeTableWithFileNames[2,2]))}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); })
+#print(dim(a2))
+
+#cat("reading", as.character(cellTypeTableWithFileNames[3,1]), "data\n")
+#a3=tryCatch({res=read.table(as.character(cellTypeTableWithFileNames[3,2]))}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); })
+#print(dim(a3))
+
+#cat("reading", as.character(cellTypeTableWithFileNames[4,1]), "data\n")
+#a4=tryCatch({res=read.table(as.character(cellTypeTableWithFileNames[4,2]))}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); })
+#print(dim(a4))
+
+#cat("reading", as.character(cellTypeTableWithFileNames[5,1]), "data\n")
+#a5=tryCatch({res=read.table(as.character(cellTypeTableWithFileNames[5,2]))}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); })
+#print(dim(a5))
+
+#cat("reading", as.character(cellTypeTableWithFileNames[6,1]), "data\n")
+#a6=tryCatch({res=read.table(as.character(cellTypeTableWithFileNames[6,2]))}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); }) #, finally = {cat("try-catch done\n")})
+#print(dim(a6))
+
+cat("reading in data\n")
+orderMatrix=read.table(orderMatrixFile);
+orderMatrixSub=orderMatrix
+m=as.data.frame(orderMatrixSub[,2])
+rownames(m)=orderMatrixSub[,1]
+alignedReads=read.table(alignedReadsFile, sep = "\t");
+altExons=read.table(altExonsFile)
+projections=read.table(projFile)
+
+# Get only sections which are exonic and find position of last base of exons
+# in data
+projected=projections[which(projections[,4]=="exonic"),]
+rightPlotEnd = max(projected[,6])
+
+# Cluster the data if user specified via AllInfo path. Default is 1 (intron
+# chain).
+#order1 <- getClustering(a1, m, cluster, 1)
+#order2 <- getClustering(a2, m, cluster, 2)
+#order3 <- getClustering(a3, m, cluster, 3)
+#order4 <- getClustering(a4, m, cluster, 4)
+#order5 <- getClustering(a5, m, cluster, 5)
+#order6 <- getClustering(a6, m, cluster, 6)
+
+orderNames <- paste('order', 1:numCT, sep='')
+for(i in 1:numCT){
+    temp <- getClustering(get(aNames[i]), m, cluster, i)
+    #print(length(temp))
+    assign(orderNames[i], temp)
+}
+#print(paste(orderNames, length(get(orderNames[7]))))
+
+#print(paste(orderNames[7], get(orderNames[7])))
+
+# Get number of reads for total read count used in countMismatches function
+readLengths <- list()
+#readOrder1=rownames(m)[which(rownames(m) %in% a1[,9])]
+#readLengths <- append(readLengths, length(readOrder1))
+#readOrder2=rownames(m)[which(rownames(m) %in% a2[,9])]
+#readLengths <- append(readLengths, length(readOrder2))
+#readOrder3=rownames(m)[which(rownames(m) %in% a3[,9])]
+#readLengths <- append(readLengths, length(readOrder3))
+#readOrder4=rownames(m)[which(rownames(m) %in% a4[,9])]
+#readLengths <- append(readLengths, length(readOrder4))
+#readOrder5=rownames(m)[which(rownames(m) %in% a5[,9])]
+#readLengths <- append(readLengths, length(readOrder5))
+#readOrder6=rownames(m)[which(rownames(m) %in% a6[,9])]
+#readLengths <- append(readLengths, length(readOrder6))
+
+readOrderNames <- paste("readOrder", 1:numCT, sep='')
+for(i in 1:numCT){
+    assign(readOrderNames[i], rownames(m)[which(rownames(m) %in% get(aNames[i])[,9])])
+    readLengths <- append(readLengths, length(get(readOrderNames[i])))
+}
+#print(paste("readLengths:", readLengths))
+
+#alignedGFFs <- paste("alignedGFF", 1:numCT, sep='')
+#for(i in 1:numCT){
+#    assign(alignedGFFs[i], as.character(cellTypeTableWithFileNames[i,2]))
+#}
+#print(paste(alignedGFFs[7], get(alignedGFFs[7])))
+
+headerNames <- paste("annotationHeader", 1:numCT, sep='')
+for(i in 1:numCT){
+    assign(headerNames[i], as.character(cellTypeTableWithFileNames[i,3]))
+}
+#print(paste(headerNames[7], get(headerNames[7])))
+
+colReadNames <- paste("colReads", 1:numCT, sep='')
+for(i in 1:numCT){
+    assign(colReadNames[i], as.character(cellTypeTableWithFileNames[i,4]))
+}
+#print(paste(colReadNames[7], get(colReadNames[7])))
+
+# Call to plotting function
+plotGenes(annoGTF=exampleAnnotationGTF, aNames, annotationHeader="Gencode annotation", headerNames,
+          colAnno="black", colReadNames, cexT=mycex, SNVFile, insertFile, deleteFile, rightPlotEnd,
+          orderNames, windowStart, windowEnd, drawAxis=FALSE, altExons=altExons, projections=projections, readLengths=readLengths,
+          CI=CI, mismatchCutoff, specialColor="darkorange", numCT);
+# plotGenes(annoGTF=exampleAnnotationGTF,alignedGFF1=as.character(cellTypeTableWithFileNames[1,2]),
+#           alignedGFF2=as.character(cellTypeTableWithFileNames[2,2]),alignedGFF3=as.character(cellTypeTableWithFileNames[3,2]),
+#           alignedGFF4=as.character(cellTypeTableWithFileNames[4,2]),alignedGFF5=as.character(cellTypeTableWithFileNames[5,2]),
+#           alignedGFF6=as.character(cellTypeTableWithFileNames[6,2]),annotationHeader="Gencode annotation",
+#           alignmentHeader1=as.character(cellTypeTableWithFileNames[1,3]), alignmentHeader2=as.character(cellTypeTableWithFileNames[2,3]),
+#           alignmentHeader3=as.character(cellTypeTableWithFileNames[3,3]), alignmentHeader4=as.character(cellTypeTableWithFileNames[4,3]),
+#           alignmentHeader5=as.character(cellTypeTableWithFileNames[5,3]),alignmentHeader6=as.character(cellTypeTableWithFileNames[6,3]),
+#           colAnno="black",colReads1=as.character(cellTypeTableWithFileNames[1,4]),colReads2=as.character(cellTypeTableWithFileNames[2,4]),
+#           colReads3=as.character(cellTypeTableWithFileNames[3,4]),colReads4=as.character(cellTypeTableWithFileNames[4,4]),
+#           colReads5=as.character(cellTypeTableWithFileNames[5,4]),colReads6=as.character(cellTypeTableWithFileNames[6,4]),cexT=mycex,
+#           SNVFile,insertFile,deleteFile,rightPlotEnd,alignedReads1=order1,alignedReads2=order2,alignedReads3=order3,alignedReads4=order4,alignedReads5=order5,
+#           alignedReads6=order6,windowStart,windowEnd,drawAxis=FALSE,altExons=altExons,projections=projections,readLengths=readLengths,
+#           CI=CI,mismatchCutoff,specialColor="darkorange");
+warnings()
 
 
 dev.off();
