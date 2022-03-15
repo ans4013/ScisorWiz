@@ -16,7 +16,7 @@ library(ScisorWiz)
 #                           package = "ScisorWiz")
 #  
 #  ## Run command without plotting mismatches
-#  ScisorWiz_AllInfo(gencodeAnno = gencodeAnnoFile, AllInfoInput = allInfoFile,
+#  ScisorWiz_AllInfo(gencodeAnno = gencodeAnno, AllInfoInput = allInfoFile,
 #                    cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1,
 #                    ci = .05, outputDir = "extdata/outputDir/")
 #  
@@ -28,7 +28,7 @@ library(ScisorWiz)
 #                             package = "ScisorWiz")
 #  
 #  ## Run command with plotting mismatches
-#  ScisorWiz_AllInfo(gencodeAnno = gencodeAnnoFile, AllInfoInput = allInfoFile,
+#  ScisorWiz_AllInfo(gencodeAnno = gencodeAnno, AllInfoInput = allInfoFile,
 #                    cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1,
 #                    ci = .05, mismatchCutoff = .05,
 #                    outputDir = "extdata/outputDir/", mismatchFile = mismatches)
