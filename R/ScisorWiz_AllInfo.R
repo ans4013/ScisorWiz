@@ -27,18 +27,22 @@
 #' pipeline
 #' @param mismatchFile Output of MismatchFinder function if used. Default is
 #' NULL.
+#' @param zoom Yes (y) or No (n) for zooming into a user-specified window on the
+#' plot. Default is No (n).
+#' @param interactive Yes (y) or No (n) for creating an interactive plot session
+#' using the pdf produced from user input. Default is No (n).
 #'
 #' @return Plot visualizing isoform expression of the gene of interest among up
 #' to 6 user-specified cell types
 #'
 #' @usage ScisorWiz_AllInfo(gencodeAnno, AllInfoInput, cellTypeFile, gene,
-#' cluster, ci, mismatchCutoff, outputDir, mismatchFile)
+#' cluster, ci, mismatchCutoff, outputDir, mismatchFile, zoom, interactive)
 #'
 #' @export
 
 ScisorWiz_AllInfo <- function(gencodeAnno, AllInfoInput, cellTypeFile, gene,
                               cluster=1, ci=.05, mismatchCutoff=.05, outputDir,
-                              mismatchFile=NULL) {
+                              mismatchFile=NULL, zoom="n", interactive = "n") {
   print("================= Handling arguments =================")
 
   dir.create(outputDir, recursive = T)
@@ -116,18 +120,57 @@ ScisorWiz_AllInfo <- function(gencodeAnno, AllInfoInput, cellTypeFile, gene,
     SNVFile <- paste0(geneOutput, gene, ".SNVs.tab")
     insertionsFile <- paste0(geneOutput, gene, ".insertions.tab")
     deletionsFile <- paste0(geneOutput, gene, ".deletions.tab")
-    runR <- paste("Rscript", R_file, "pdf", plotName, 3, annoRemap,
-                  cellTypeFilewithFileNames, orderFile, all5File, altExonsFile,
-                  projectionRemapFile, gene, cluster, ci, mismatchCutoff,
-                  plotOutput, SNVFile, insertionsFile, deletionsFile)
+    if(zoom == "y"){
+      cat("Please enter exon number for left side of zoom window:")
+      windowStart <- scan(what = integer)
+      cat("Please enter exon number for right side of zoom window:")
+      windowEnd <- scan(what = integer)
+
+      runR <- paste("Rscript", R_file, interactive, plotName, annoRemap,
+                    cellTypeFilewithFileNames, orderFile, all5File, altExonsFile,
+                    projectionRemapFile, gene, cluster, ci, mismatchCutoff,
+                    plotOutput, SNVFile, insertionsFile, deletionsFile,
+                    windowStart, windowEnd)
+    }
+    else {
+      runR <- paste("Rscript", R_file, interactive, plotName, annoRemap,
+                    cellTypeFilewithFileNames, orderFile, all5File, altExonsFile,
+                    projectionRemapFile, gene, cluster, ci, mismatchCutoff,
+                    plotOutput, SNVFile, insertionsFile, deletionsFile)
+    }
   }
   else{
-    runR <- paste("Rscript", R_file, "pdf", plotName, 3, annoRemap,
+    if(zoom == "y"){
+      cat("Please enter exon number for left side of zoom window:")
+      windowStart <- scan(what = integer)
+      cat("Please enter exon number for right side of zoom window:")
+      windowEnd <- scan(what = integer)
+
+      runR <- paste("Rscript", R_file, interactive, plotName, annoRemap,
+                    cellTypeFilewithFileNames, orderFile, all5File, altExonsFile,
+                    projectionRemapFile, gene, cluster, ci, mismatchCutoff,
+                    plotOutput, windowStart, windowEnd)
+    }
+    else{
+      runR <- paste("Rscript", R_file, interactive, plotName, annoRemap,
                 cellTypeFilewithFileNames, orderFile, all5File, altExonsFile,
                 projectionRemapFile, gene, cluster, ci, mismatchCutoff,
                 plotOutput)
+    }
   }
   system(runR)
+
+  if(interactive == "y"){
+    print("ENTERING INTERACTIVE PLOT")
+    interactiveScript <- system.file("RScript", "interactivePlot.R", package = "ScisorWiz")
+    plotPath <- paste0(genePlotOutput, plotName, ".jpg")
+    htmlPath <- paste0(genePlotOutput, plotName, ".html")
+    print(plotPath)
+    print(htmlPath)
+    runInteractive <- paste("Rscript", interactiveScript, plotPath, htmlPath)
+
+    system(runInteractive)
+  }
 
   rm(list=ls())
 }
