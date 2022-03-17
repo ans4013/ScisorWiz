@@ -48,8 +48,8 @@ to 6 user-specified cell types
 }
 \description{
 This is the script to run the entire pipeline if the user enters
-an AllInfo FIle as their data. AllInfo file is an output of the scisorseqr
-pipeline. Uses the data from single-cell long-read RNA sequencing to
+an AllInfo File as their data. AllInfo file is an output of the scisorseqr
+pipeline. Uses the data from si  ngle-cell long-read RNA sequencing to
 visualize the isoform expression patterns of a single gene across up to six
 celltypes. The data is clustered in one of 4 ways: by intron chain of the
 reads, by TSS site, by PolyA site, or by PolyA and TSS sites. User has option
