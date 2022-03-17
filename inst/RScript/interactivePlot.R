@@ -1,6 +1,19 @@
-library('plotly')
-library('htmlwidgets')
-library('RCurl')
+#!/usr/bin/env python
+
+###############################################################################
+# Follow up script to PlotIsoforms.r only accessed when interactive = "yes":
+#   - Input: input file name, output file name
+#   - Output: Plot of all isoforms of gene across all cell type choices. File is
+#             an interactive html file
+#
+# Command: ./interactivePlot.R input file name, output file name
+#
+# by Hagen U. Tilgner (2012); modified and updated by Alexander N. Stein (2021)
+################################################################################
+
+if(!require(plotly)) install.packages('plotly')
+if(!require(htmlwidgets)) install.packages('htmlwidgets')
+if(!require(RCurl)) install.packages('RCurl')
 
 args<-commandArgs(trailingOnly=TRUE);
 image_file <- args[1]

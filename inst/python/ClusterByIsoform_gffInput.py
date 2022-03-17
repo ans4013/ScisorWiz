@@ -74,7 +74,7 @@ for line in annoFile:
 	#     the matched row for the gene of interest. If match, append row
 	#     to array
         if "exon" in columns[2] or "CDS" in columns[2]:
-            if "gene_name" in columns[i] and gene in columns[i+1]:#len(re.findall(geneMatch, columns[i+1])) > 0:
+            if "gene_name" in columns[i] and gene == columns[i+1]: #len(re.findall(geneMatch, columns[i+1])) > 0:
                 annoContents.append(columns)
 
 annoFile.close()

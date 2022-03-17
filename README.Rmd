@@ -9,7 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## README
 
-ScisorWiz is a linux-based R-package for visualizing differential isoform expression for any gene across up to six cell types.
+ScisorWiz is a linux-based R-package for visualizing differential isoform expression for any gene across any number of cell types.
 
 ScisorWiz affords its user the opportunity to visualize specific genes across specific cell types, and provides various sorting options for the user to gain different ways to understand their data. ScisorWiz provides a clear picture of differential isoform expression through various clustering methods and highlighting features such as alternative exons and Single Nucleotide Variants (SNVs).
 
