@@ -4,7 +4,7 @@ ScisorWiz: Vizualizer for Differential Isoform Expression
 ## README
 
 ScisorWiz is a linux-based R-package for visualizing differential
-isoform expression for any gene across up to six cell types.
+isoform expression for any gene across any number of cell types.
 
 ScisorWiz affords its user the opportunity to visualize specific genes
 across specific cell types, and provides various sorting options for the
