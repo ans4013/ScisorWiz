@@ -27,8 +27,8 @@
 #' pipeline
 #' @param mismatchFile Output of MismatchFinder function if used. Default is
 #' NULL.
-#' @param zoom Yes (y) or No (n) for zooming into a user-specified window on the
-#' plot. Default is No (n).
+# @param zoom Yes (y) or No (n) for zooming into a user-specified window on the
+# plot. Default is No (n).
 #' @param interactive Yes (y) or No (n) for creating an interactive plot session
 #' using the pdf produced from user input. Default is No (n).
 #'
@@ -36,7 +36,7 @@
 #' to 6 user-specified cell types
 #'
 #' @usage ScisorWiz_AllInfo(gencodeAnno, AllInfoInput, cellTypeFile, gene,
-#' cluster, ci, mismatchCutoff, outputDir, mismatchFile, zoom, interactive)
+#' cluster, ci, mismatchCutoff, outputDir, mismatchFile, interactive)
 #'
 #' @export
 

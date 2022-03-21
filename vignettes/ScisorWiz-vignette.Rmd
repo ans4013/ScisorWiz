@@ -59,6 +59,7 @@ Using AllInfo file output from the scisorseqr package, the user can choose the c
   - Output directory in which the user wants output files stored
   - Optional: Mismatches file containing output from the MismatchFinder function
     (see Section 2). Default value is NULL
+  - Optional: Interactive plot (for exploratory purposes, see Section 3)
 
 \*Celltype file is __tab separated__ with each cell type and display color on a new line, and cell type names must be written exactly as they appear in the GENCODE file. The file looks like the following:
 
@@ -95,6 +96,11 @@ ScisorWiz_AllInfo(gencodeAnno = gencodeAnno, AllInfoInput = allInfoFile,
 
 # If the optional mismatchFinder function hasn't been run, the mismatches file
 # is located in extData/, rather than within the outputDir subdirectory
+gencodeAnno <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
+                           package = "ScisorWiz")
+allInfoFile <- system.file("extdata/", "AllInfo.gz", package = "ScisorWiz")
+cTypeFile <- system.file("extdata/", "userInput/celltypeFile", 
+                         package = "ScisorWiz")
 mismatches <- system.file("extdata/", "outputDir/Snap25.mismatches.txt.gz",
                            package = "ScisorWiz")
 
@@ -130,6 +136,7 @@ Without the AllInfo file from the scisorseqr pipeline, the user can still run Sc
   - Output directory in which the user wants output files stored
   - Optional: Mismatches file containing output from the MismatchFinder function
     (see Section 2). Default value is NULL
+  - Optional: Interactive plot (for exploratory purposes, see Section 3)
   
 ```{r ScisorWiz_2File, eval=FALSE, echo=TRUE}
 
@@ -191,5 +198,25 @@ knitr::include_graphics("../man/figures/Snap25_Isoform_Plot.pdf")
 
 <br>
 **NOTE** The example data included in this package does not yield the plot above. This is just an example plot generated from the full dataset.
+
+## Section 3 - Option to Create Interactive Plot
+When calling the ScisorWiz_AllInfo or ScisorWiz_2File functions, users have an option to create an
+interactive plot in which dynamic, windowed zooming and panning functionality will allow the user to explore the plot printout closely. For this option, the user must specify:
+
+```{r ScisorWiz_AllInfo_interactive, eval=FALSE, echo=TRUE}
+
+gencodeAnno <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
+                           package = "ScisorWiz")
+allInfoFile <- system.file("extdata/", "AllInfo.gz", package = "ScisorWiz")
+cTypeFile <- system.file("extdata/", "userInput/celltypeFile", 
+                         package = "ScisorWiz")
+
+## Run command without plotting mismatches
+ScisorWiz_AllInfo(gencodeAnno = gencodeAnno, AllInfoInput = allInfoFile,
+                  cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1,
+                  ci = .05, outputDir = "extdata/outputDir/", interactive = "y")
+```
+
+When this option is chosen, the output will be two files. The first is a .jpg file which will be visually different than the default pdf plot. The second output file is an interactive html file which is automatically made using the .jpg file. Opening the html file will allow the user to interact with the plot, zooming and panning throughout it for a deeper look at any data of interest.
 
 ## Done!

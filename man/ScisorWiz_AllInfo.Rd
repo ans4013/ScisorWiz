@@ -6,7 +6,7 @@
 \title{ScisorWiz AllInfo File pipeline}
 \usage{
 ScisorWiz_AllInfo(gencodeAnno, AllInfoInput, cellTypeFile, gene,
-cluster, ci, mismatchCutoff, outputDir, mismatchFile, zoom, interactive)
+cluster, ci, mismatchCutoff, outputDir, mismatchFile, interactive)
 }
 \arguments{
 \item{gencodeAnno}{Gencode annotation file from which data files are created}
@@ -35,9 +35,6 @@ pipeline}
 
 \item{mismatchFile}{Output of MismatchFinder function if used. Default is
 NULL.}
-
-\item{zoom}{Yes (y) or No (n) for zooming into a user-specified window on the
-plot. Default is No (n).}
 
 \item{interactive}{Yes (y) or No (n) for creating an interactive plot session
 using the pdf produced from user input. Default is No (n).}
