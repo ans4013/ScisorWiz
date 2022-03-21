@@ -81,14 +81,14 @@ Using AllInfo file output from the scisorseqr package, the user can choose the c
   
 ```{r ScisorWiz_AllInfo, eval=FALSE, echo=TRUE}
 
-gencodeAnno <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
+gencodeAnnoFile <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
                            package = "ScisorWiz")
 allInfoFile <- system.file("extdata/", "AllInfo.gz", package = "ScisorWiz")
 cTypeFile <- system.file("extdata/", "userInput/celltypeFile", 
                          package = "ScisorWiz")
 
 ## Run command without plotting mismatches
-ScisorWiz_AllInfo(gencodeAnno = gencodeAnno, AllInfoInput = allInfoFile,
+ScisorWiz_AllInfo(gencodeAnno = gencodeAnnoFile, AllInfoInput = allInfoFile,
                   cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1,
                   ci = .05, outputDir = "extdata/outputDir/")
 
@@ -96,19 +96,19 @@ ScisorWiz_AllInfo(gencodeAnno = gencodeAnno, AllInfoInput = allInfoFile,
 
 # If the optional mismatchFinder function hasn't been run, the mismatches file
 # is located in extData/, rather than within the outputDir subdirectory
-gencodeAnno <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
+gencodeAnnoFile <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
                            package = "ScisorWiz")
 allInfoFile <- system.file("extdata/", "AllInfo.gz", package = "ScisorWiz")
 cTypeFile <- system.file("extdata/", "userInput/celltypeFile", 
                          package = "ScisorWiz")
-mismatches <- system.file("extdata/", "outputDir/Snap25.mismatches.txt.gz",
+mismatchesFile <- system.file("extdata/", "outputDir/Snap25.mismatches.txt.gz",
                            package = "ScisorWiz")
 
 ## Run command with plotting mismatches
-ScisorWiz_AllInfo(gencodeAnno = gencodeAnno, AllInfoInput = allInfoFile,
+ScisorWiz_AllInfo(gencodeAnno = gencodeAnnoFile, AllInfoInput = allInfoFile,
                   cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1,
                   ci = .05, mismatchCutoff = .05,
-                  outputDir = "extdata/outputDir/", mismatchFile = mismatches)
+                  outputDir = "extdata/outputDir/", mismatchFile = mismatchesFile)
 ```
 
 The output after running the data through the ScisorWiz_AllInfo function without mismatches is as follows:
@@ -205,18 +205,18 @@ interactive plot in which dynamic, windowed zooming and panning functionality wi
 
 ```{r ScisorWiz_AllInfo_interactive, eval=FALSE, echo=TRUE}
 
-gencodeAnno <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
+gencodeAnnoFile <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
                            package = "ScisorWiz")
 allInfoFile <- system.file("extdata/", "AllInfo.gz", package = "ScisorWiz")
 cTypeFile <- system.file("extdata/", "userInput/celltypeFile", 
                          package = "ScisorWiz")
 
 ## Run command without plotting mismatches
-ScisorWiz_AllInfo(gencodeAnno = gencodeAnno, AllInfoInput = allInfoFile,
+ScisorWiz_AllInfo(gencodeAnno = gencodeAnnoFile, AllInfoInput = allInfoFile,
                   cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1,
                   ci = .05, outputDir = "extdata/outputDir/", interactive = "y")
 ```
 
-When this option is chosen, the output will be two files. The first is a .jpg file which will be visually different than the default pdf plot. The second output file is an interactive html file which is automatically made using the .jpg file. Opening the html file will allow the user to interact with the plot, zooming and panning throughout it for a deeper look at any data of interest.
+When this option is chosen, the output plots will be contained in two files. The first is a .jpg file which will be visually different than the default pdf plot. The second output file is an interactive html file which is automatically made using the .jpg file. Opening the html file will allow the user to interact with the plot, zooming and panning throughout it for a deeper look at any data of interest.
 
 ## Done!

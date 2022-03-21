@@ -24,4 +24,4 @@ Language: en-US
 VignetteBuilder: knitr
 Suggests: rmarkdown, knitr
 NeedsCompilation: no
-Packaged: 2022-03-21 18:04:54 UTC; astei
+Packaged: 2022-03-21 19:57:21 UTC; astei

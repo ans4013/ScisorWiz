@@ -74,8 +74,10 @@ ScisorWiz_AllInfo(gencodeAnno = "gencode.vM21.annotation.gtf.gz",
 AllInfoInput = allInfoFile,
 cellTypeFile = cTypeFile, 
 gene = "Snap25", cluster = 1, ci = .05,
-outputDir = "outputDir/", 
-mismatchFile=mismatchesFile)
+mismatchCutoff = .05,
+outputDir = "outputDir/",
+mismatchFile = mismatchesFile,
+interactive = "n")
 ```
 
 A step-by-step outline of the various functions is available as a

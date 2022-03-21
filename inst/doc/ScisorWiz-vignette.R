@@ -9,14 +9,14 @@ library(ScisorWiz)
 
 ## ----ScisorWiz_AllInfo, eval=FALSE, echo=TRUE---------------------------------
 #  
-#  gencodeAnno <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
+#  gencodeAnnoFile <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
 #                             package = "ScisorWiz")
 #  allInfoFile <- system.file("extdata/", "AllInfo.gz", package = "ScisorWiz")
 #  cTypeFile <- system.file("extdata/", "userInput/celltypeFile",
 #                           package = "ScisorWiz")
 #  
 #  ## Run command without plotting mismatches
-#  ScisorWiz_AllInfo(gencodeAnno = gencodeAnno, AllInfoInput = allInfoFile,
+#  ScisorWiz_AllInfo(gencodeAnno = gencodeAnnoFile, AllInfoInput = allInfoFile,
 #                    cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1,
 #                    ci = .05, outputDir = "extdata/outputDir/")
 #  
@@ -24,19 +24,19 @@ library(ScisorWiz)
 #  
 #  # If the optional mismatchFinder function hasn't been run, the mismatches file
 #  # is located in extData/, rather than within the outputDir subdirectory
-#  gencodeAnno <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
+#  gencodeAnnoFile <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
 #                             package = "ScisorWiz")
 #  allInfoFile <- system.file("extdata/", "AllInfo.gz", package = "ScisorWiz")
 #  cTypeFile <- system.file("extdata/", "userInput/celltypeFile",
 #                           package = "ScisorWiz")
-#  mismatches <- system.file("extdata/", "outputDir/Snap25.mismatches.txt.gz",
+#  mismatchesFile <- system.file("extdata/", "outputDir/Snap25.mismatches.txt.gz",
 #                             package = "ScisorWiz")
 #  
 #  ## Run command with plotting mismatches
-#  ScisorWiz_AllInfo(gencodeAnno = gencodeAnno, AllInfoInput = allInfoFile,
+#  ScisorWiz_AllInfo(gencodeAnno = gencodeAnnoFile, AllInfoInput = allInfoFile,
 #                    cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1,
 #                    ci = .05, mismatchCutoff = .05,
-#                    outputDir = "extdata/outputDir/", mismatchFile = mismatches)
+#                    outputDir = "extdata/outputDir/", mismatchFile = mismatchesFile)
 
 ## ----plot1, out.width = '60%', echo=F-----------------------------------------
 knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_noMis.pdf")
@@ -69,14 +69,14 @@ knitr::include_graphics("../man/figures/Snap25_Isoform_Plot.pdf")
 
 ## ----ScisorWiz_AllInfo_interactive, eval=FALSE, echo=TRUE---------------------
 #  
-#  gencodeAnno <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
+#  gencodeAnnoFile <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
 #                             package = "ScisorWiz")
 #  allInfoFile <- system.file("extdata/", "AllInfo.gz", package = "ScisorWiz")
 #  cTypeFile <- system.file("extdata/", "userInput/celltypeFile",
 #                           package = "ScisorWiz")
 #  
 #  ## Run command without plotting mismatches
-#  ScisorWiz_AllInfo(gencodeAnno = gencodeAnno, AllInfoInput = allInfoFile,
+#  ScisorWiz_AllInfo(gencodeAnno = gencodeAnnoFile, AllInfoInput = allInfoFile,
 #                    cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1,
 #                    ci = .05, outputDir = "extdata/outputDir/", interactive = "y")
 
