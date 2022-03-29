@@ -476,7 +476,7 @@ plotGenes<-function(annoGTF, aNames, annotationHeader, headerNames, colAnno, col
         deleteTable = read.table(deleteFile)
 
         # Get mismatches for each cell type
-        cat("Getting SNVs, insertions, and deletions")
+        cat("Getting SNVs, insertions, and deletions\n")
         for(i in 1:numCT){
             assign(r2MNames[i], getMismatches(aNames[i], SNVTable, insertTable, deleteTable))
         }
