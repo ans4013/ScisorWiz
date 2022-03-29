@@ -153,9 +153,9 @@ ScisorWiz_AllInfo <- function(gencodeAnno, AllInfoInput, cellTypeFile, gene,
     }
     else{
       runR <- paste("Rscript", R_file, interactive, plotName, annoRemap,
-                cellTypeFilewithFileNames, orderFile, all5File, altExonsFile,
-                projectionRemapFile, gene, cluster, ci, mismatchCutoff,
-                plotOutput)
+                    cellTypeFilewithFileNames, orderFile, all5File, altExonsFile,
+                    projectionRemapFile, gene, cluster, ci, mismatchCutoff,
+                    plotOutput)
     }
   }
   system(runR)
