@@ -6,7 +6,7 @@
 \title{ScisorWiz 2 File pipeline}
 \usage{
 ScisorWiz_2File(gencodeAnno, gffInput, genesInput, cellTypeFile, gene,
-ci, mismatchCutoff, outputDir, mismatchFile)
+ci, mismatchCutoff, outputDir, mismatchFile, interactive)
 }
 \arguments{
 \item{gencodeAnno}{Gencode annotation file from which data files are created}
@@ -33,6 +33,9 @@ pipeline}
 
 \item{mismatchFile}{Output of MismatchFinder function if used. Default is
 NULL.}
+
+\item{interactive}{Yes (y) or No (n) for creating an interactive plot session
+using the pdf produced from user input. Default is No (n).}
 }
 \value{
 Plot visualizing isoform expression of the gene of interest among up
