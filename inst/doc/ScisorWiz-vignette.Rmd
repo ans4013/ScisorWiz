@@ -44,8 +44,10 @@ There are two options for running the pipeline to plot the data depending on the
       | RGL:GCAGCCAGTAAATGTG:m64013_190223_004143/73663463/ccs.path1 | ENSMUSG00000041571.9 |
       | OPCs:TCAGGATAGTTCGCAT:m64013_190221_020520/30540150/ccs.path1 | ENSMUSG00000038717.8|
       
+**NOTE** The cell type from which the read came must be appended to the readID in the same format as above. This helps to sort each read into the appropiate cell type cluster.
+      
 ### Pipeline Option 1 - ScisorWiz_AllInfo
-Using AllInfo file output from the scisorseqr package, the user can choose the clustering method to utilize for the data on the final plot. For that the user must specify:
+This option uses the AllInfo file output from the scisorseqr package. Entering the command for the ScisorWiz_AllInfo pipeline option gives the user the ability to choose the clustering method to utilize for the data on the final plot. For that the user must specify:
   
   - GENCODE annotation file for user data
   - AllInfo file derived from scisorseqr
@@ -121,7 +123,7 @@ knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_noMis.pdf")
 **NOTE** The example data included in this package does not yield the plot above. This is just an example plot generated from the full dataset.
 
 ### Pipeline Option 2 - ScisorWiz_2File
-Without the AllInfo file from the scisorseqr pipeline, the user can still run ScisorWiz on their gff.gz and genes.gz files which are filtered for detected cage and PolyA peaks. For that the user must specify:
+Without the AllInfo file from the scisorseqr pipeline, the user will not be able to choose a clustering method for the data, so using this option will cluster the data automatically by the intron chain. However, the user can still run the ScisorWiz_2File function on their gff.gz and genes.gz files which are filtered for detected cage and PolyA peaks. For that the user must specify:
   
   - GENCODE annotation file for user data
   - gff.gz file containing read-specific information 
