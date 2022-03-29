@@ -21,22 +21,24 @@
 #' is .05.
 #' @param outputDir User-specified directory to store all output from the
 #' pipeline
-# @param zoom Yes (y) or No (n) for zooming into a user-specified window on the
-# plot. Default is No (n).
 #' @param mismatchFile Output of MismatchFinder function if used. Default is
 #' NULL.
+# @param zoom Yes (y) or No (n) for zooming into a user-specified window on the
+# plot. Default is No (n).
+#' @param interactive Yes (y) or No (n) for creating an interactive plot session
+#' using the pdf produced from user input. Default is No (n).
 #' 
 #' @return Plot visualizing isoform expression of the gene of interest among up
 #' to 6 user-specified cell types
 #'
 #' @usage ScisorWiz_2File(gencodeAnno, gffInput, genesInput, cellTypeFile, gene,
-#' ci, mismatchCutoff, outputDir, mismatchFile)
+#' ci, mismatchCutoff, outputDir, mismatchFile, interactive)
 #'
 #' @export
 
 ScisorWiz_2File <- function(gencodeAnno, gffInput, genesInput, cellTypeFile, gene,
                             ci=.05, mismatchCutoff=.05, outputDir, zoom = "n",
-                            mismatchFile=NULL) {
+                            mismatchFile=NULL, interactive = "n") {
   print("================= Handling arguments =================")
 
   dir.create(outputDir, recursive = T)
@@ -124,18 +126,18 @@ ScisorWiz_2File <- function(gencodeAnno, gffInput, genesInput, cellTypeFile, gen
       windowStart <- scan(what = integer)
       cat("Please enter exon number for right side of zoom window:")
       windowEnd <- scan(what = integer)
-    
-      runR <- paste("Rscript", R_file, "pdf", plotName, 3, annoRemap,
-                  cellTypeFilewithFileNames, orderFile, all5File, altExonsFile,
-                  projectionRemapFile, gene, 1, ci, mismatchCutoff, plotOutput,
-                  SNVFile, insertionsFile, deletionsFile, windowStart,
-                  windowEnd)
+      
+      runR <- paste("Rscript", R_file, interactive, plotName, annoRemap,
+                    cellTypeFilewithFileNames, orderFile, all5File, altExonsFile,
+                    projectionRemapFile, gene, 1, ci, mismatchCutoff,
+                    plotOutput, SNVFile, insertionsFile, deletionsFile,
+                    windowStart, windowEnd)
     }
-    else{
-      runR <- paste("Rscript", R_file, "pdf", plotName, 3, annoRemap,
-                  cellTypeFilewithFileNames, orderFile, all5File, altExonsFile,
-                  projectionRemapFile, gene, 1, ci, mismatchCutoff, plotOutput,
-                  SNVFile, insertionsFile, deletionsFile)
+    else {
+      runR <- paste("Rscript", R_file, interactive, plotName, annoRemap,
+                    cellTypeFilewithFileNames, orderFile, all5File, altExonsFile,
+                    projectionRemapFile, gene, 1, ci, mismatchCutoff,
+                    plotOutput, SNVFile, insertionsFile, deletionsFile)
     }
   }
   else{
@@ -145,15 +147,16 @@ ScisorWiz_2File <- function(gencodeAnno, gffInput, genesInput, cellTypeFile, gen
       cat("Please enter exon number for right side of zoom window:")
       windowEnd <- scan(what = integer)
       
-      runR <- paste("Rscript", R_file, "pdf", plotName, 3, annoRemap,
+      runR <- paste("Rscript", R_file, interactive, plotName, annoRemap,
                     cellTypeFilewithFileNames, orderFile, all5File, altExonsFile,
-                    projectionRemapFile, gene, 1, ci, mismatchCutoff, plotOutput,
-                    windowStart, windowEnd)
+                    projectionRemapFile, gene, 1, ci, mismatchCutoff,
+                    plotOutput, windowStart, windowEnd)
     }
     else{
-      runR <- paste("Rscript", R_file, "pdf", plotName, 3, annoRemap,
+      runR <- paste("Rscript", R_file, interactive, plotName, annoRemap,
                     cellTypeFilewithFileNames, orderFile, all5File, altExonsFile,
-                    projectionRemapFile, gene, 1, ci, mismatchCutoff, plotOutput)
+                    projectionRemapFile, gene, 1, ci, mismatchCutoff,
+                    plotOutput)
     }
   }
   system(runR)
