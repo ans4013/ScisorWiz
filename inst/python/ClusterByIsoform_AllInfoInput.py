@@ -56,7 +56,7 @@ else:
 print("Step 2 - Getting annotation for", gene, "-- May take some time depending on file size")
 annoFile = gzip.open(annotationFile, "rb")
 
-geneMatch = "\\b" + gene + "\\b"
+geneMatch = "\"" + gene + "\""
 annoContents = []
 for line in annoFile:
     # Decode data from gzipped version
@@ -99,7 +99,10 @@ for i in annoContents:
     if int(i[4]) > maximum:
         maximum = int(i[4])
 
-chromosome = annoContents[0][0]
+if len(annoContents[0][0]) == 0:
+    raise Error("Gene name not found in dataset. Please check spelling and retry.")
+else:
+    chromosome = annoContents[0][0]
 
 strand = annoContents[0][6]
 
