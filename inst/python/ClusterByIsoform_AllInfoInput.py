@@ -8,7 +8,8 @@
 #   - Output: Many files used in the R script to visualize data
 #
 # Command: ./ClusterByIsoform_AllInfoInput.py GENCODE_Annotation.gtf AllInfo.gz
-#                               cellTypeFile.tab, gene_name, ci, outputDir
+#                               cellTypeFile.tab, gene_name, ci, outputDir,
+#                               (geneName).mismatchfile.txt.gz
 #
 # by Alexander N. Stein
 ################################################################################

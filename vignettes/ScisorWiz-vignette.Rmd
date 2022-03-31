@@ -26,6 +26,10 @@ The *ScisorWiz* package creates a plot utilizing single-cell long-read RNA seque
     * pandas
   * R version >= 3.5 with the following packages:
     * hash
+    * Optional (for interactive option):
+      * plotly
+      * htmlwidgets
+      * RCurl
 
 ## Section 1 - Main workflow - Organize data and create the plot
 
