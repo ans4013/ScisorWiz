@@ -1,8 +1,8 @@
 #' ScisorWiz Mismatch Finder Function
 #' @aliases MismatchFinder
 #' @description Cross references data from .bam file against a reference genome
-#' to determine mismatches in the genetic code. These mismatches include
-#' Single Nucleotide Polymorphisms (SNPs), nucleotide insertions, and
+#' (.fasta file) to determine mismatches in the genetic code. These mismatches include
+#' Single Nucleotide Variations (SNVs), nucleotide insertions, and
 #' nucleotide deletions. These mismatches are listed per read to be later
 #' included in the ScisorWiz Pipeline function.
 #'
@@ -13,7 +13,7 @@
 #' @param gene User-specified gene of interest
 #' @param outputDir User-specified directory to store output from the function
 #'
-#' @return Mismatch file with positions of SNPs, insertions, and deletions
+#' @return Mismatch file with positions of SNVs, insertions, and deletions
 #' organized by read
 #'
 #' @usage MismatchFinder(BAM, fasta, gencodeAnno, gene, outputDir)
