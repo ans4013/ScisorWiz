@@ -1,20 +1,21 @@
 #' ScisorWiz AllInfo File pipeline
 #' @aliases ScisorWizAllInfo
-#' @description This is the script to run the entire pipeline if the user enters
+#' @description This is the script to run the entire pipeline if the user inputs
 #' an AllInfo File as their data. AllInfo file is an output of the scisorseqr
-#' pipeline. Uses the data from si  ngle-cell long-read RNA sequencing to
-#' visualize the isoform expression patterns of a single gene across up to six
-#' celltypes. The data is clustered in one of 4 ways: by intron chain of the
-#' reads, by TSS site, by PolyA site, or by PolyA and TSS sites. User has option
+#' pipeline. Uses data from single-cell long-read RNA sequencing to visualize
+#' the isoform expression patterns of a single gene across any number of cell
+#' types. Data is clustered in one of 4 ways: by intron chain of the reads, by
+#' TSS site, by PolyA site, or by all three clustering methods. User has option
 #' to include a mismatch file by first running necessary files through the
-#' MismatchFinder function.
+#' MismatchFinder function. User can choose to create an interactive plot for
+#' exploratory purposes by setting the "interactive" argument equal to "y".
 #'
 #' @param gencodeAnno Gencode annotation file from which data files are created
 #' @param AllInfoInput File generated from the scisorseqr package that houses
 #' all data in a uniquely organized fashion: readID, geneID, celltype, barcode,
 #' intron chain, etc.
-#' @param cellTypeFile File housing user specified celltypes and desired color
-#' of reads of those celltypes for the output plot
+#' @param cellTypeFile Tab-separated file housing user specified cell types and
+#' desired color of reads of those cell types for the output plot
 #' @param gene User-specified gene of interest
 #' @param cluster User-specified clustering method (1 = intron chain, 2 =
 #' TSS site, 3 = PolyA site, 4 = intron chain, TSS site, and PolyA site).
@@ -29,11 +30,11 @@
 #' NULL.
 # @param zoom Yes (y) or No (n) for zooming into a user-specified window on the
 # plot. Default is No (n).
-#' @param interactive Yes (y) or No (n) for creating an interactive plot session
-#' using the pdf produced from user input. Default is No (n).
+#' @param interactive Yes (y) or No (n) for creating an interactive html plot
+#' file using a jpg produced from user input. Default is No (n).
 #'
-#' @return Plot visualizing isoform expression of the gene of interest among up
-#' to 6 user-specified cell types
+#' @return Plot visualizing isoform expression of a gene of interest among any
+#'  number of user-specified cell types
 #'
 #' @usage ScisorWiz_AllInfo(gencodeAnno, AllInfoInput, cellTypeFile, gene,
 #' cluster, ci, mismatchCutoff, outputDir, mismatchFile, interactive)
@@ -43,7 +44,7 @@
 ScisorWiz_AllInfo <- function(gencodeAnno, AllInfoInput, cellTypeFile, gene,
                               cluster=1, ci=.05, mismatchCutoff=.05, outputDir,
                               mismatchFile=NULL, zoom="n", interactive = "n") {
-  print("================= Handling arguments =================")
+  cat("================= Handling arguments =================\n")
 
   dir.create(outputDir, recursive = T)
 
@@ -81,17 +82,17 @@ ScisorWiz_AllInfo <- function(gencodeAnno, AllInfoInput, cellTypeFile, gene,
     }
   }
 
-  print(paste("Output Directory:", geneOutput))
-  print(paste("Plot Output Directory:", genePlotOutput))
-  print(paste("Annotation File:", gencodeAnno))
-  print(paste("Data File:", AllInfoInput))
-  print(paste("Cell Type File:", cellTypeFile))
-  print(paste("Gene of Interest:", gene))
+  cat(paste("Output Directory:", geneOutput, "\n"))
+  cat(paste("Plot Output Directory:", genePlotOutput, "\n"))
+  cat(paste("Annotation File:", gencodeAnno, "\n"))
+  cat(paste("Data File:", AllInfoInput, "\n"))
+  cat(paste("Cell Type File:", cellTypeFile, "\n"))
+  cat(paste("Gene of Interest:", gene, "\n"))
   if(!is.null(mismatchFile)){
-    print(paste("Mismatch File:", mismatchFile))
+    cat(paste("Mismatch File:", mismatchFile, "\n"))
   }
 
-  print("=============== Running python script ================")
+  cat("================= Running python script ==================\n")
   py_file <- system.file("python", "ClusterByIsoform_AllInfoInput.py",
                          package = "ScisorWiz")
   if(!is.null(mismatchFile)){
@@ -114,16 +115,16 @@ ScisorWiz_AllInfo <- function(gencodeAnno, AllInfoInput, cellTypeFile, gene,
   altExonsFile <- paste0(geneOutput, gene, ".altExons.tab")
   projectionRemapFile <- paste0(geneOutput, gene, ".projection.tab.remap.gz")
 
-  print("================== Running R script ==================")
+  cat("==================== Running R script ====================\n")
   R_file <- system.file("RScript", "PlotIsoforms.r", package = "ScisorWiz")
   if(!is.null(mismatchFile)){
     SNVFile <- paste0(geneOutput, gene, ".SNVs.tab")
     insertionsFile <- paste0(geneOutput, gene, ".insertions.tab")
     deletionsFile <- paste0(geneOutput, gene, ".deletions.tab")
     if(zoom == "y"){
-      cat("Please enter exon number for left side of zoom window:")
+      cat("Please enter exon number for left side of zoom window:\n")
       windowStart <- scan(what = integer)
-      cat("Please enter exon number for right side of zoom window:")
+      cat("Please enter exon number for right side of zoom window:\n")
       windowEnd <- scan(what = integer)
 
       runR <- paste("Rscript", R_file, interactive, plotName, annoRemap,
@@ -141,9 +142,9 @@ ScisorWiz_AllInfo <- function(gencodeAnno, AllInfoInput, cellTypeFile, gene,
   }
   else{
     if(zoom == "y"){
-      cat("Please enter exon number for left side of zoom window:")
+      cat("Please enter exon number for left side of zoom window:\n")
       windowStart <- scan(what = integer)
-      cat("Please enter exon number for right side of zoom window:")
+      cat("Please enter exon number for right side of zoom window:\n")
       windowEnd <- scan(what = integer)
 
       runR <- paste("Rscript", R_file, interactive, plotName, annoRemap,
@@ -161,12 +162,12 @@ ScisorWiz_AllInfo <- function(gencodeAnno, AllInfoInput, cellTypeFile, gene,
   system(runR)
 
   if(interactive == "y"){
-    print("ENTERING INTERACTIVE PLOT")
+    cat("ENTERING INTERACTIVE PLOT\n")
     interactiveScript <- system.file("RScript", "interactivePlot.R", package = "ScisorWiz")
     plotPath <- paste0(genePlotOutput, plotName, ".jpg")
     htmlPath <- paste0(genePlotOutput, plotName, ".html")
-    print(plotPath)
-    print(htmlPath)
+    cat(paste(plotPath, "\n"))
+    cat(paste(htmlPath, "\n"))
     runInteractive <- paste("Rscript", interactiveScript, plotPath, htmlPath)
 
     system(runInteractive)
