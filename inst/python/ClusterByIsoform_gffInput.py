@@ -20,12 +20,12 @@ import pandas as pd
 import gzip
 import os.path
 from os import path
-import time
+import numpy as np
 import re
 
 
 # Step 1 - Manage arguments and check for errors
-print("Step 1 - Managing command line arguments")
+print("Step 1 of 15 - Managing command line arguments")
 
 annotationFile = sys.argv[1]
 if not path.exists(sys.argv[1]):
@@ -60,7 +60,7 @@ else:
 
 # Step 2 - Organize data
 # Step 2a - Get annotation for the gene
-print("Step 2 - Getting annotation for", gene, "-- May take some time depending on file size")
+print("Step 2 of 15 - Getting annotation for", gene, "-- May take some time depending on file size")
 annoFile = gzip.open(annotationFile, "rb")
 
 geneMatch = "\"" + gene + "\""
@@ -95,7 +95,7 @@ annoOutput.close()
 
 
 # Get start, end, chromosome and strand for the gene
-print("Step 3 - Getting start, end, chromosome and strand for", gene, "gene")
+print("Step 3 of 15 - Getting start, end, chromosome and strand for", gene, "gene")
 minimum = 1000000000
 maximum = -1
 
@@ -113,11 +113,13 @@ else:
 
 strand = annoContents[0][6]
 
+ucscHeaderInfo = "browser position " + str(chromosome) + ":" + str(minimum) + "-" + str(maximum)
+
 print(chromosome, " : ", minimum, "-", maximum, " : ", strand)
 
 
 # Get all reads from all datasets
-print("Step 4 - Getting all reads from all datasets -- May take some time depending on file size")
+print("Step 4 of 15 - Getting all reads from all datasets -- May take some time depending on file size")
 
 ## Grab geneID for the reads. This step assumes same geneID for all rows in
 ##     annoContents array
@@ -172,7 +174,7 @@ spanningRegionOutput.close()
 
 
 # Order by isoform
-print("Step 5 - Ordering by isoform")
+print("Step 5 of 15 - Ordering by isoform")
 struc = []
 intSt = []
 info = ""
@@ -224,7 +226,7 @@ orderOutput.close()
 
 
 # Make projection
-print("Step 6 - Making projection")
+print("Step 6 of 15 - Making projection")
 
 # Find start (minimum) and end (maximum) for all reads sorted from Step 4
 for i in geneIDMatch:
@@ -296,7 +298,7 @@ projOutput.close()
 
 
 # Remap projection to new coordinates
-print("Step 7 - Remapping projection to new coordinates")
+print("Step 7 of 15 - Remapping projection to new coordinates")
 
 mini = 0
 maxi = 0
@@ -336,7 +338,7 @@ remapOutput.close()
 
 
 # Remap reads to new coordinates
-print("Step 8 - Remapping reads to new coordinates")
+print("Step 8 of 15 - Remapping reads to new coordinates")
 
 cellType = open(cellTypeFile, "rb")
 
@@ -395,9 +397,8 @@ for cType in cellType:
 
 cellType.close()
 
-
 # Find alternative exons
-print("Step 9 - Finding alternative exons")
+print("Step 9 of 15 - Finding alternative exons")
 
 altExons = []
 exIncl = 0
@@ -470,7 +471,7 @@ altExonOutput.close()
 
 
 # Remap geneIDMatch to new coordinates
-print("Step 10 - Remapping all5DatasetsSpanningRegion to the new coordinates.")
+print("Step 10 of 15 - Remapping all5DatasetsSpanningRegion to the new coordinates.")
 geneIDRemap = []
 for line in geneIDMatch:
     ID = line[9][1]
@@ -510,7 +511,7 @@ geneIDRemapOutput.close()
 
 
 # Ordering remapped geneIDMatch by isoform
-print("Step 11 - Ordering remapped reads by isoform.")
+print("Step 11 of 15 - Ordering remapped reads by isoform.")
 strucRemap = []
 intStRemap = []
 infoRemap = ""
@@ -562,7 +563,7 @@ orderRemapOutput.close()
 
 
 # Remap annotation to new coordinates
-print("Step 12 - Remapping annotation to the new coordinates")
+print("Step 12 of 15 - Remapping annotation to the new coordinates")
 
 annoRemap = []
 for line in annoContents:
@@ -606,7 +607,10 @@ transRead = [None] * len(annoRemap[0])
 minimum = 10000000
 maximum = 0
 for read in annoRemap:
-    transID = read[11]
+    #transID = read[11]
+    for i in range(0,len(read)-1):
+        if str(read[i]) == "transcript_id":
+            transID = read[i+1]
     # Array starts as a list of "None" values. Ensure that you are working with a transID
     if transRead[11] != None:
 	# If you are working with a transID, but have completed going through the associated reads
@@ -675,7 +679,7 @@ remapAnnoOutput.close()
 
 
 # Set variables for the plot
-print("Step 13 - Setting variables for the plot")
+print("Step 13 of 15 - Setting variables for the plot")
 
 cellType = open(cellTypeFile, "rb")
 
@@ -711,7 +715,7 @@ plotNamesOutput.close()
 
 # Identify and remap SNVs, insertions, and deletions if option is chosen by user
 if mismatchFile != None:
-    print("Step 14 - Identifying and remapping SNVs, insertions, and deletions")
+    print("Step 14 of 15 - Identifying and remapping SNVs, insertions, and deletions")
     
     # Read in mismatches file
     mismatches = [read.strip('\n') for read in gzip.open(mismatchFile, 'rt', encoding = 'utf-8').readlines()]
@@ -870,3 +874,62 @@ if mismatchFile != None:
             deleteOutput.write(str(delList[key][i]))
         deleteOutput.write("\n")
     deleteOutput.close()
+
+
+# Create UCSC upload file
+print("Step 15 of 15 - Creating UCSC reference file for specified cell types.")
+
+cellType = open(cellTypeFile, "rb")
+
+ucscRefFile = gene + ".ucscReference.gtf.gz"
+outputPath15 = geneOutputDir + "/" + ucscRefFile
+ucscRefOutput = gzip.open(outputPath15, "w")
+
+for cType in cellType:
+    cType = cType.decode()
+    cType = cType.split()
+    
+    readsPerCType = []
+    
+    color = list(np.random.choice(range(256), size=3))
+    print(color)
+    
+    ucscTrackInfo = "track name=" + "\'" + str(cType[0]) + "\' " + "description=" + "\'" + str(cType[0]) + "\'" + " color=" + str(color[0]) + "," + str(color[1]) + "," + str(color[2]) + "\n"
+    ucscRefOutput.write(str(ucscTrackInfo).encode())
+
+    # Search for cellType matches throughout geneIDMatch array
+    for line in geneIDMatch:
+        ID = line[9]
+        if cType[0] in ID[1]:
+            for i in remap:
+		        # Only interested in exonic sections
+                if "exonic" in i[3]:
+		            # If read does not fall within the start and end of an exonic section, move on
+                    if int(line[3]) < int(i[1]) or int(line[4]) > int(i[2]):
+                        continue
+                    else:
+			            # If read falls within exonic section, recalc start and end point, and append to new readRemap
+                        ucscRead = []
+                        ucscRead.append(line[0])
+                        ucscRead.append(line[1])
+                        ucscRead.append(line[2])
+                        ucscRead.append(line[3])
+                        ucscRead.append(line[4])
+                        ucscRead.append(line[5])
+                        ucscRead.append(line[6])
+                        ucscRead.append(line[7])
+                        ucscRead.append("read_id " + "\"" + ID[1] + "\";")
+                        #ucscRead.append(ID)
+                        readsPerCType.append(ucscRead)
+    
+    # Write to output file
+    for line in readsPerCType:
+        line = '\t'.join(line) + '\n'
+        ucscRefOutput.write(line.encode())
+        #for element in line:
+        #    ucscRefOutput.write(str(element).encode())
+        #    ucscRefOutput.write("\t".encode())
+        #ucscRefOutput.write("\n".encode())
+
+cellType.close()
+ucscRefOutput.close()
