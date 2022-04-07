@@ -892,8 +892,7 @@ for cType in cellType:
     readsPerCType = []
     
     color = list(np.random.choice(range(256), size=3))
-    print(color)
-    
+
     ucscTrackInfo = "track name=" + "\'" + str(cType[0]) + "\' " + "description=" + "\'" + str(cType[0]) + "\'" + " color=" + str(color[0]) + "," + str(color[1]) + "," + str(color[2]) + "\n"
     ucscRefOutput.write(str(ucscTrackInfo).encode())
 
