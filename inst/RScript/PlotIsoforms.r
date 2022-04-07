@@ -476,7 +476,7 @@ plotGenes<-function(annoGTF, aNames, annotationHeader, headerNames, colAnno, col
         deleteTable = read.table(deleteFile)
 
         # Get mismatches for each cell type
-        cat("Getting SNVs, insertions, and deletions\n")
+        cat("Getting SNVs, insertions, and deletions -- May take some time depending on number of reads\n")
         for(i in 1:numCT){
             assign(r2MNames[i], getMismatches(aNames[i], SNVTable, insertTable, deleteTable))
         }
@@ -577,27 +577,27 @@ plotGenes<-function(annoGTF, aNames, annotationHeader, headerNames, colAnno, col
     }
 
     # Plot exon numbers
-    exonOrder = data.frame(start=integer(0), end=integer(0))
+    #exonOrder = data.frame(start=integer(0), end=integer(0))
     
     # Ensure the numbers are located within exonic sections of gene
-    for(proj in 1:nrow(projections)) {
-        if(projections[proj,4] == "exonic") {
-            exonOrder[nrow(exonOrder)+1,] = c(projections[proj,5], projections[proj,6])
-        }
-    }
+    #for(proj in 1:nrow(projections)) {
+    #    if(projections[proj,4] == "exonic") {
+    #        exonOrder[nrow(exonOrder)+1,] = c(projections[proj,5], projections[proj,6])
+    #    }
+    #}
 
     # Write in the actual numbers based on the center of the exon which with
     # they align
-    for(i in 1:nrow(exonOrder)){
-        loc = list(exonOrder$start[i], exonOrder$end[i])
-        if(loc[[2]] > to) {
-            textLoc = (loc[[1]] + to)/2
-        }
-        else {
-            textLoc = (loc[[1]] + loc[[2]])/2
-        }
-        text(textLoc, lineNumber, i, col=colAnno, cex=.5*cexT)
-    }
+    #for(i in 1:nrow(exonOrder)){
+    #    loc = list(exonOrder$start[i], exonOrder$end[i])
+    #    if(loc[[2]] > to) {
+    #        textLoc = (loc[[1]] + to)/2
+    #    }
+    #    else {
+    #        textLoc = (loc[[1]] + loc[[2]])/2
+    #    }
+    #    text(textLoc, lineNumber, i, col=colAnno, cex=.5*cexT)
+    #}
     lineNumber = lineNumber-12
 }
 
@@ -715,8 +715,6 @@ subfigureNames=c("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o");
 
 ########################################
 # 2. the name of the plot
-
-cat("# 2. the name of the output-file\n");
 
 if(interactive == "y"){
     outGraphFileNameJpg=paste(outputDir,paste(outGraphFileName,"jpg",sep="."),sep="/");
