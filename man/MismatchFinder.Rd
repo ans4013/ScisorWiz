@@ -19,13 +19,13 @@ MismatchFinder(BAM, fasta, gencodeAnno, gene, outputDir)
 \item{outputDir}{User-specified directory to store output from the function}
 }
 \value{
-Mismatch file with positions of SNPs, insertions, and deletions
+Mismatch file with positions of SNVs, insertions, and deletions
 organized by read
 }
 \description{
 Cross references data from .bam file against a reference genome
-to determine mismatches in the genetic code. These mismatches include
-Single Nucleotide Polymorphisms (SNPs), nucleotide insertions, and
+(.fasta file) to determine mismatches in the genetic code. These mismatches include
+Single Nucleotide Variations (SNVs), nucleotide insertions, and
 nucleotide deletions. These mismatches are listed per read to be later
 included in the ScisorWiz Pipeline function.
 }

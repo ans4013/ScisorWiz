@@ -15,8 +15,8 @@ cluster, ci, mismatchCutoff, outputDir, mismatchFile, interactive)
 all data in a uniquely organized fashion: readID, geneID, celltype, barcode,
 intron chain, etc.}
 
-\item{cellTypeFile}{File housing user specified celltypes and desired color
-of reads of those celltypes for the output plot}
+\item{cellTypeFile}{Tab-separated file housing user specified cell types and
+desired color of reads of those cell types for the output plot}
 
 \item{gene}{User-specified gene of interest}
 
@@ -36,20 +36,21 @@ pipeline}
 \item{mismatchFile}{Output of MismatchFinder function if used. Default is
 NULL.}
 
-\item{interactive}{Yes (y) or No (n) for creating an interactive plot session
-using the pdf produced from user input. Default is No (n).}
+\item{interactive}{Yes (y) or No (n) for creating an interactive html plot
+file using a jpg produced from user input. Default is No (n).}
 }
 \value{
-Plot visualizing isoform expression of the gene of interest among up
-to 6 user-specified cell types
+Plot visualizing isoform expression of a gene of interest among any
+number of user-specified cell types
 }
 \description{
-This is the script to run the entire pipeline if the user enters
+This is the script to run the entire pipeline if the user inputs
 an AllInfo File as their data. AllInfo file is an output of the scisorseqr
-pipeline. Uses the data from si  ngle-cell long-read RNA sequencing to
-visualize the isoform expression patterns of a single gene across up to six
-celltypes. The data is clustered in one of 4 ways: by intron chain of the
-reads, by TSS site, by PolyA site, or by PolyA and TSS sites. User has option
+pipeline. Uses data from single-cell long-read RNA sequencing to visualize
+the isoform expression patterns of a single gene across any number of cell
+types. Data is clustered in one of 4 ways: by intron chain of the reads, by
+TSS site, by PolyA site, or by all three clustering methods. User has option
 to include a mismatch file by first running necessary files through the
-MismatchFinder function.
+MismatchFinder function. User can choose to create an interactive plot for
+exploratory purposes by setting the "interactive" argument equal to "y".
 }

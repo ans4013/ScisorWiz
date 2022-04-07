@@ -17,8 +17,8 @@ start, end, strand direction, and readID}
 \item{genesInput}{Genes file housing read data: readID, geneID, read and gene
 quality}
 
-\item{cellTypeFile}{File housing user specified celltypes and desired color
-of reads of those celltypes for the output plot}
+\item{cellTypeFile}{Tab-separated file housing user specified cell types and
+desired color of reads of those cell types for the output plot}
 
 \item{gene}{User-specified gene of interest}
 
@@ -34,18 +34,20 @@ pipeline}
 \item{mismatchFile}{Output of MismatchFinder function if used. Default is
 NULL.}
 
-\item{interactive}{Yes (y) or No (n) for creating an interactive plot session
-using the pdf produced from user input. Default is No (n).}
+\item{interactive}{Yes (y) or No (n) for creating an interactive html plot
+file using a jpg produced from user input. Default is No (n).}
 }
 \value{
-Plot visualizing isoform expression of the gene of interest among up
-to 6 user-specified cell types
+Plot visualizing isoform expression of a gene of interest among any
+number of user-specified cell types
 }
 \description{
-This is the script to run the entire pipeline if the user enters
+This is the script to run the entire pipeline if the user inputs
 a gff and genes.gz file as their data. Uses the data from single-cell long-
 read RNA sequencing to visualize the isoform expression patterns of a single
-gene across up to six celltypes. The data is clustered by intron chain. User
-has option to include a mismatch file by first running necessary files
-through the MismatchFinder function.
+gene across any number of celltypes. Data is clustered by intron chain. The
+user has option to include a mismatch file by first running necessary files
+through the MismatchFinder function. User can also choose to create an
+interactive plot for exploratory purposes by setting the "interactive"
+argument equal to "y".
 }
