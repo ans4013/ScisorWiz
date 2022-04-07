@@ -4,7 +4,7 @@ output: pdf_document
 vignette: |
   %\VignetteIndexEntry{ScisorWiz-vignette}
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+  \usepackage[utf8]{inputenc}
 ---
 
 ```{r, include = FALSE}
@@ -14,33 +14,55 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
-library(ScisorWiz)
-```
-
 The *ScisorWiz* package creates a plot utilizing single-cell long-read RNA sequencing data in order to display isoform expression differentiation across multiple cell types for a single gene.
 
+
+##Setup
+
+
 ## Software required
+
   * samtools (for MismatchFinder function -- see Section 2 - Optional Preprocessing)
   * python version >= 3.7 with the following libraries:
     * pandas
   * R version >= 3.5 with the following packages:
     * hash
-    * Optional (for interactive option):
-      * plotly
+    * Optional (for interactive option)
+      * plotly (for R)
       * htmlwidgets
       * RCurl
+      
+### Quick cheat for viewing documentation
+All the possible arguments, usage, and description for each function can be viewed interactively
+by putting a "?" in front of the function name in the R console like so:
 
-## Section 1 - Main workflow - Organize data and create the plot
+```{r demonstrateMan, include = TRUE, eval = FALSE}
+?ScisorWiz_AllInfo
+```
+
+# Section 1 - Main workflow - Organize data and create the plot
 
 There are two options for running the pipeline to plot the data depending on the files available to the user:
 
   - ScisorWiz_AllInfo
-    - Used if the user has output from the scisorseqr package called the AllInfo file.
+    - Used if the user has output from the [scisorseqr](https://github.com/noush-joglekar/scisorseqr/) package called the AllInfo file.
       - This method is recommended to provide more customizability and specificity to
         the output plots.
+      - For an idea of the formatting for the AllInfo file, please see the example AllInfo file by clicking on the path below:
+        - [AllInfo.gz file path](`r paste0('file:///',file.path(find.package('ScisorWiz'),'extdata','AllInfo'))`)
+      
   - ScisorWiz_2File
     - Used if the user has gff.gz file and genes.gz file filtered for detected cage and polyA peaks.
+      - gff.gz file is a tab-separated file containing read info (1 read per line) and is formatted as follows:
+      
+      | chromosome | genome | readType | start | end | score | strand | frame |
+      | ---------- | ------ | ---------- | ------ | ------ | ----- | ------- | ----- |
+      | chr18 | hg38 | cDNA_match | 263682 | 264092 |   . |    -    |  . |
+      
+      | read_id string | readID |
+      | -------------- | ----------------------------------------------------------------------- |
+      | read_id | "ExciteDG:CTCCTTTAGCCTGAAG:762e2e07-1cf8-4150-8f3a-60cc263a7445.path1"; |
+      
       - genes.gz file is a tab-separated file containing readID to geneID mappings and is formatted as follows:
       
       | readID | geneID |
@@ -50,8 +72,11 @@ There are two options for running the pipeline to plot the data depending on the
       
 **NOTE** The cell type from which the read came must be appended to the readID in the same format as above. This helps to sort each read into the appropiate cell type cluster.
       
-### Pipeline Option 1 - ScisorWiz_AllInfo
-This option uses the AllInfo file output from the scisorseqr package. Entering the command for the ScisorWiz_AllInfo pipeline option gives the user the ability to choose the clustering method to utilize for the data on the final plot. For that the user must specify:
+## Pipeline Option 1 - ScisorWiz_AllInfo
+This option uses the AllInfo file output from the [scisorseqr](https://github.com/noush-joglekar/scisorseqr/) package. More information on preprocessing with scisorseqr can be found below in the section titled "Running scisorseqr". 
+
+
+Entering the command for the ScisorWiz_AllInfo pipeline option gives the user the ability to choose the clustering method to utilize for the data on the final plot. For that the user must specify:
   
   - GENCODE annotation file for user data
   - AllInfo file derived from scisorseqr
@@ -85,36 +110,19 @@ This option uses the AllInfo file output from the scisorseqr package. Entering t
   1. PolyA site
   1. Intron chain, TSS site, and PolyA site
   
-```{r ScisorWiz_AllInfo, eval=FALSE, echo=TRUE}
+```{r ScisorWiz_AllInfo_NoMis, eval=FALSE, echo=TRUE}
+library(ScisorWiz)
 
 gencodeAnnoFile <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
                            package = "ScisorWiz")
-allInfoFile <- system.file("extdata/", "AllInfo.gz", package = "ScisorWiz")
-cTypeFile <- system.file("extdata/", "userInput/celltypeFile", 
+allInfoFile <- system.file("extdata/", "userInput/AllInfo.gz", package = "ScisorWiz")
+cTypeFile <- system.file("extdata/", "userInput/celltypeFile_Snap25.tab", 
                          package = "ScisorWiz")
 
 ## Run command without plotting mismatches
 ScisorWiz_AllInfo(gencodeAnno = gencodeAnnoFile, AllInfoInput = allInfoFile,
                   cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1,
-                  ci = .05, outputDir = "extdata/outputDir/")
-
-##___________________________________OR____________________________________##
-
-# If the optional mismatchFinder function hasn't been run, the mismatches file
-# is located in extData/, rather than within the outputDir subdirectory
-gencodeAnnoFile <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
-                           package = "ScisorWiz")
-allInfoFile <- system.file("extdata/", "AllInfo.gz", package = "ScisorWiz")
-cTypeFile <- system.file("extdata/", "userInput/celltypeFile", 
-                         package = "ScisorWiz")
-mismatchesFile <- system.file("extdata/", "outputDir/Snap25.mismatches.txt.gz",
-                           package = "ScisorWiz")
-
-## Run command with plotting mismatches
-ScisorWiz_AllInfo(gencodeAnno = gencodeAnnoFile, AllInfoInput = allInfoFile,
-                  cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1,
-                  ci = .05, mismatchCutoff = .05,
-                  outputDir = "extdata/outputDir/", mismatchFile = mismatchesFile)
+                  ci = .05, outputDir = "outputDir/")
 ```
 
 The output after running the data through the ScisorWiz_AllInfo function without mismatches is as follows:
@@ -126,7 +134,106 @@ knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_noMis.pdf")
 <br>
 **NOTE** The example data included in this package does not yield the plot above. This is just an example plot generated from the full dataset.
 
-### Pipeline Option 2 - ScisorWiz_2File
+```{r ScisorWiz_AllInfo_Mismatches, eval=FALSE, echo=TRUE}
+##___________________________________OR____________________________________##
+
+library(ScisorWiz)
+
+# If the optional mismatchFinder function hasn't been run, the mismatches file
+# is located in extData/, rather than within the outputDir subdirectory. This is
+# where the example mismatches file is located.
+
+gencodeAnnoFile <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
+                           package = "ScisorWiz")
+allInfoFile <- system.file("extdata/", "AllInfo.gz", package = "ScisorWiz")
+cTypeFile <- system.file("extdata/", "userInput/celltypeFile", 
+                         package = "ScisorWiz")
+mismatchesFile <- system.file("extdata/", "Snap25.mismatches.txt.gz",
+                           package = "ScisorWiz")
+
+## Run command with plotting mismatches
+ScisorWiz_AllInfo(gencodeAnno = gencodeAnnoFile, AllInfoInput = allInfoFile,
+                  cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1,
+                  ci = .05, mismatchCutoff = .05,
+                  outputDir = "outputDir/", mismatchFile = mismatchesFile)
+```
+
+The output after running the data through the MismatchFinder function and then the ScisorWiz_AllInfo function is as follows:
+
+```{r plot2, out.width = '60%', echo=F}
+knitr::include_graphics("../man/figures/Snap25_Isoform_Plot.pdf")
+```
+
+<br>
+**NOTE** The example data included in this package does not yield the plot above. This is just an example plot generated from the full dataset.
+
+
+### Running scisorseqr
+
+The scisorseqr package was built with the goal of performing differential isoform expression tests between samples either at the cell-type level using single cell barcodes, or at the spatial level using spatial 'spot' barcodes. The package performs extensive QC and filtering of the data to ensure that only barcoded, full-length, spliced reads are taken into consideration. Due to the rigorous filtering that the package performs as well as the the data formats it generates, we recommend users run that pipeline to ensure the highest quality reads make it into the ScisorWiz plot.
+
+Instead of multiple files containing various pieces of information about a read, scisorseqr combines all the necessary information needed to produce the isoform plot. Particularly, it combines the read name along with a cell type annotation, barcode, and UMI information in columns of the file, and additionally collates the coordinates of exons that map to a read within a single column of this file as opposed to having multiple lines e.g. in a GTF format
+
+We have included the output from scisorseqr i.e. the AllInfo.gz file, which is used as input for the ScisorWiz isoform plot. However, if the user wishes to run the whole pipeline including the steps of scisorseqr, we have provided the necessary input for two example genes: *Snap25* and *Pkm*
+
+The user will have to download bed files for annotated CAGE peaks and PolyA sites. If the user wishes to proceed
+without them, simply set the parameter filterFullLength=FALSE in Step3 below
+
+```{r scisorseqr, eval=FALSE, echo=TRUE}
+
+library(scisorseqr)
+
+genomeFa <- args[2]
+annoGZ <- args[3]
+cageBedFile <- args[4]
+polyaBedFile <- args[5]
+seqDir <- args[6]
+
+print("++++++++ Step 1: Getting barcodes and filtering those reads out")
+
+fqFolderPath <- system.file("extdata/", "userInput/fqFolder/", package = "ScisorWiz")
+ctAssignments <- system.file("extdata/", "userInput/barcode_cellType_assignments", package = "ScisorWiz")
+
+GetBarcodes(fqFolder=fqFolderPath,
+        BCClustAssignFile=ctAssignments,
+        chemistry='v2', filterReads=TRUE, numProcesses=12,
+        concatenate=FALSE)
+
+print("++++++++ Step 2: Aligning with minimap2")
+mmProgPath <- '~/minimap2/minimap2' ## Please provide path to minimap2 aligner
+genomeFa <- '~/genomes/M.musculus/mm10.fa' ## Please provide path to a mouse genome
+
+MMalign(fqFolder=fqFolderPath,mmProgPath,
+        refGenome=genomeFa,
+        numThreads=12)
+
+print("++++++++ Step 3: Map and filter function")
+
+gencodeAnnoFile <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz", package = "ScisorWiz")
+chr_fa_dir <- '~/genomes/M.musculus/mm10/chromFa/' ## Please provide a path to a directory containing one fa.gz file per chromosome
+
+# Below two arguments are optional. Can instead set filterFullLength=FALSE in the function
+polyABed_path <- 'atlas.clusters_chr.mm10.2-0.bed.gz'
+cageBed_path <- 'mm10_fair+new_CAGE_peaks_phase1and2.bed.gz'
+
+MapAndFilter(numThreads=12, filterFullLength=TRUE,
+        polyABed=polyABed_path,
+        cageBed=cageBed_path,
+        annoGZ=gencodeAnnoFile,
+        seqDir=chr_fa_dir, genomeVersion='mm10')
+
+print("++++++++ Step 4: Getting All-Info files")
+## If default parameters for Step 1 are used, the the barcodeOutput file will be autogenenerated in the 
+## "OutputFiltered" folder
+
+InfoPerLongRead(barcodeOutputFile='OutputFiltered/FilteredDeconvBC_P7HIPP_subset.csv',
+        mapAndFilterOut='LRProcessingOutput/', minTimesIsoObserve=1, rmTmpFolder=FALSE)
+
+print("+++++++ All done!")
+```
+
+
+## Pipeline Option 2 - ScisorWiz_2File
 Without the AllInfo file from the scisorseqr pipeline, the user will not be able to choose a clustering method for the data, so using this option will cluster the data automatically by the intron chain. However, the user can still run the ScisorWiz_2File function on their gff.gz and genes.gz files which are filtered for detected cage and PolyA peaks. For that the user must specify:
   
   - GENCODE annotation file for user data
@@ -150,7 +257,7 @@ Without the AllInfo file from the scisorseqr pipeline, the user will not be able
 ## Run command without plotting mismatches
 ScisorWiz_2File(gencodeAnno = "gencodeAnnoFile.gz", gffInput = "CagePolyA.gff.gz",
                 genesInput = "reads2genes.gz",cellTypeFile = "cellTypeFile_Snap25.tab",
-                gene = "Snap25", ci = .05, outputDir = "extdata/outputDir/")
+                gene = "Snap25", ci = .05, outputDir = "outputDir/")
 
 ##___________________________________OR____________________________________##
 
@@ -158,13 +265,13 @@ ScisorWiz_2File(gencodeAnno = "gencodeAnnoFile.gz", gffInput = "CagePolyA.gff.gz
 ScisorWiz_2File(gencodeAnno = "gencodeAnnoFile.gz",
                 gffInput = "CagePolyA.gff.gz", genesInput = "reads2genes.gz",
                 cellTypeFile = "cellTypeFile_Snap25.tab",gene = "Snap25",
-                ci = .05, mismatchCutoff = .05, outputDir = "extdata/outputDir/",
+                ci = .05, mismatchCutoff = .05, outputDir = "outputDir/",
                 mismatchFile = "Snap25.mismatches.txt.gz")
 ```
 **NOTE** The data included in the package is not for this function due to raw file size, to test ScisorWiz using included data, please refer to Pipeline Option 1 - ScisorWiz_AllInfo section example.
 
 
-## Section 2 - Optional Pre-processing
+# Section 2 - Optional Pre-processing: Getting SNVs with MismatchFinder Function
 Prior to using ScisorWiz main pipeline, the user has the option to run the MismatchFinder function. MismatchFinder will specify any SNVs, insertions, or deletions in the data as compared to the reference genome. For that the user must specify:
 
   - Sorted .bam file
@@ -175,9 +282,10 @@ Prior to using ScisorWiz main pipeline, the user has the option to run the Misma
 
 ```{r MismatchFinder, eval=FALSE, echo=TRUE}
 ## Run command
+library(ScisorWiz)
 MismatchFinder(BAM = "sorted.bestperRead.mapping.bam", fasta = "mm10.fa",
                gencodeAnno = "gencode.vM21.annotation.gtf.gz", gene = "Snap25",
-               outputDir = "extdata/outputDir/")
+               outputDir = "outputDir/")
 ```
 
 User will see the output directory with a subdirectory specifically named for the gene of interest:
@@ -196,33 +304,27 @@ User will see the output directory with a subdirectory specifically named for th
 136781282_136781283_A;136781282_136781283_C|136781219_C;136781421_C|
 
 
-The output after running the data through the MismatchFinder function and then the ScisorWiz_AllInfo function is as follows:
-
-```{r plot2, out.width = '60%', echo=F}
-knitr::include_graphics("../man/figures/Snap25_Isoform_Plot.pdf")
-```
-
-<br>
-**NOTE** The example data included in this package does not yield the plot above. This is just an example plot generated from the full dataset.
-
-## Section 3 - Option to Create Interactive Plot
+# Section 3 - Option to Create Interactive Plot
 When calling the ScisorWiz_AllInfo or ScisorWiz_2File functions, users have an option to create an
 interactive plot in which dynamic, windowed zooming and panning functionality will allow the user to explore the plot printout closely. For this option, the user must specify:
 
 ```{r ScisorWiz_AllInfo_interactive, eval=FALSE, echo=TRUE}
+library(ScisorWiz)
 
 gencodeAnnoFile <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
                            package = "ScisorWiz")
-allInfoFile <- system.file("extdata/", "AllInfo.gz", package = "ScisorWiz")
-cTypeFile <- system.file("extdata/", "userInput/celltypeFile", 
+allInfoFile <- system.file("extdata/", "userInput/AllInfo.gz", package = "ScisorWiz")
+cTypeFile <- system.file("extdata/", "userInput/celltypeFile_Snap25.tab", 
                          package = "ScisorWiz")
 
 ## Run command without plotting mismatches
 ScisorWiz_AllInfo(gencodeAnno = gencodeAnnoFile, AllInfoInput = allInfoFile,
                   cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1,
-                  ci = .05, outputDir = "extdata/outputDir/", interactive = "y")
+                  ci = .05, outputDir = "outputDir/", interactive = "y")
 ```
 
 When this option is chosen, the output plots will be contained in two files. The first is a .jpg file which will be visually different than the default pdf plot. The second output file is an interactive html file which is automatically made using the .jpg file. Opening the html file will allow the user to interact with the plot, zooming and panning throughout it for a deeper look at any data of interest.
+
+**NOTE** The jpg and html files are intended to be used for exploratory purposes only. If you would like to use a ScisorWiz plot as a figure in a paper or presentation, please keep the interactive option set to "n" and use the pdf version of the plot. Thank you!
 
 ## Done!
