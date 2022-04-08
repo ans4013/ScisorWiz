@@ -5,6 +5,7 @@ vignette: |
   %\VignetteIndexEntry{ScisorWiz-vignette}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
+urlcolor: blue
 ---
 
 ```{r, include = FALSE}
@@ -16,13 +17,8 @@ knitr::opts_chunk$set(
 
 The *ScisorWiz* package creates a plot utilizing single-cell long-read RNA sequencing data in order to display isoform expression differentiation across multiple cell types for a single gene.
 
-
-##Setup
-
-
 ## Software required
 
-  * samtools (for MismatchFinder function -- see Section 2 - Optional Preprocessing)
   * python version >= 3.7 with the following libraries:
     * pandas
   * R version >= 3.5 with the following packages:
@@ -31,6 +27,9 @@ The *ScisorWiz* package creates a plot utilizing single-cell long-read RNA seque
       * plotly (for R)
       * htmlwidgets
       * RCurl
+  * samtools (for MismatchFinder function -- see Section 2 - Optional Preprocessing
+      
+**NOTE:** We recommend downloading ScisorWiz and running all functions of the package in R via a Mac or Linux terminal in an environment which has both R and python installed rather than in RStudio as the user may run into issues running the python code included in this package.
       
 ### Quick cheat for viewing documentation
 All the possible arguments, usage, and description for each function can be viewed interactively
@@ -48,8 +47,23 @@ There are two options for running the pipeline to plot the data depending on the
     - Used if the user has output from the [scisorseqr](https://github.com/noush-joglekar/scisorseqr/) package called the AllInfo file.
       - This method is recommended to provide more customizability and specificity to
         the output plots.
-      - For an idea of the formatting for the AllInfo file, please see the example AllInfo file by clicking on the path below:
-        - [AllInfo.gz file path](`r paste0('file:///',file.path(find.package('ScisorWiz'),'extdata','AllInfo'))`)
+      - The AllInfo file is formatted with data in the following order by column:
+        - Read ID
+        - Gene ID
+        - Cell type
+        - Barcode
+        - UMI
+        - TSS peak + Intron Chain + PolyA peak
+        - Exon Chain
+        - Novelty Status
+        - Number of Introns
+      - For an idea of the formatting for the AllInfo file, please see the example AllInfo file provided in the package by inputting the command to open the AllInfo file below:
+        
+```{r ViewAllInfoFile, eval=FALSE, echo=TRUE}
+library(ScisorWiz)
+allInfoExampleFile <- system.file("extdata", "userInput/AllInfo", package = "ScisorWiz")
+system(paste("cat", allInfoExampleFile))
+```
       
   - ScisorWiz_2File
     - Used if the user has gff.gz file and genes.gz file filtered for detected cage and polyA peaks.
@@ -70,7 +84,7 @@ There are two options for running the pipeline to plot the data depending on the
       | RGL:GCAGCCAGTAAATGTG:m64013_190223_004143/73663463/ccs.path1 | ENSMUSG00000041571.9 |
       | OPCs:TCAGGATAGTTCGCAT:m64013_190221_020520/30540150/ccs.path1 | ENSMUSG00000038717.8|
       
-**NOTE** The cell type from which the read came must be appended to the readID in the same format as above. This helps to sort each read into the appropiate cell type cluster.
+**NOTE:** The cell type from which the read came must be appended to the readID in the same format as above. This helps to sort each read into the appropiate cell type cluster.
       
 ## Pipeline Option 1 - ScisorWiz_AllInfo
 This option uses the AllInfo file output from the [scisorseqr](https://github.com/noush-joglekar/scisorseqr/) package. More information on preprocessing with scisorseqr can be found below in the section titled "Running scisorseqr". 
@@ -113,10 +127,10 @@ Entering the command for the ScisorWiz_AllInfo pipeline option gives the user th
 ```{r ScisorWiz_AllInfo_NoMis, eval=FALSE, echo=TRUE}
 library(ScisorWiz)
 
-gencodeAnnoFile <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
+gencodeAnnoFile <- system.file("extdata", "gencode.vM21.annotation.gtf.gz",
                            package = "ScisorWiz")
-allInfoFile <- system.file("extdata/", "userInput/AllInfo.gz", package = "ScisorWiz")
-cTypeFile <- system.file("extdata/", "userInput/celltypeFile_Snap25.tab", 
+allInfoFile <- system.file("extdata", "userInput/AllInfo.gz", package = "ScisorWiz")
+cTypeFile <- system.file("extdata", "userInput/cellTypeFile_Snap25.tab", 
                          package = "ScisorWiz")
 
 ## Run command without plotting mismatches
@@ -125,30 +139,36 @@ ScisorWiz_AllInfo(gencodeAnno = gencodeAnnoFile, AllInfoInput = allInfoFile,
                   ci = .05, outputDir = "outputDir/")
 ```
 
+Example of the output at the top of next page:
+
+\newpage
+
 The output after running the data through the ScisorWiz_AllInfo function without mismatches is as follows:
 
-```{r plot1, out.width = '60%', echo=F}
-knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_noMis.pdf")
+```{r plot1, out.width = '50%', echo=F}
+knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_testdata_noMis.pdf")
 ```
 
 <br>
-**NOTE** The example data included in this package does not yield the plot above. This is just an example plot generated from the full dataset.
+**NOTE 1:** The example data included in this package should yield a plot very similar to the one above. 
+
+**NOTE 2:** You may notice that Step 14 was skipped in this test run. This is because no mismatches file was input as an argument, and as a result mismatches will not be present on the output plot. To run this with mismatches, see the below chunk of code:
 
 ```{r ScisorWiz_AllInfo_Mismatches, eval=FALSE, echo=TRUE}
 ##___________________________________OR____________________________________##
 
 library(ScisorWiz)
 
-# If the optional mismatchFinder function hasn't been run, the mismatches file
-# is located in extData/, rather than within the outputDir subdirectory. This is
-# where the example mismatches file is located.
+# In order to retain a smaller overall size for the ScisorWizpackage, the
+# example data mismatches file is located in extData/, rather than within the
+# outputDir subdirectory where normal output from the first step would go. 
 
-gencodeAnnoFile <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
+gencodeAnnoFile <- system.file("extdata", "gencode.vM21.annotation.gtf.gz",
                            package = "ScisorWiz")
-allInfoFile <- system.file("extdata/", "AllInfo.gz", package = "ScisorWiz")
-cTypeFile <- system.file("extdata/", "userInput/celltypeFile", 
+allInfoFile <- system.file("extdata", "AllInfo.gz", package = "ScisorWiz")
+cTypeFile <- system.file("extdata", "userInput/cellTypeFile_Snap25.tab", 
                          package = "ScisorWiz")
-mismatchesFile <- system.file("extdata/", "Snap25.mismatches.txt.gz",
+mismatchesFile <- system.file("extdata", "Snap25.mismatches.txt.gz",
                            package = "ScisorWiz")
 
 ## Run command with plotting mismatches
@@ -158,26 +178,31 @@ ScisorWiz_AllInfo(gencodeAnno = gencodeAnnoFile, AllInfoInput = allInfoFile,
                   outputDir = "outputDir/", mismatchFile = mismatchesFile)
 ```
 
+Example of the output at the top of next page:
+
+\newpage
+
 The output after running the data through the MismatchFinder function and then the ScisorWiz_AllInfo function is as follows:
 
-```{r plot2, out.width = '60%', echo=F}
-knitr::include_graphics("../man/figures/Snap25_Isoform_Plot.pdf")
+```{r plot2, out.width = '50%', echo=F}
+knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_testdata.pdf")
 ```
 
 <br>
-**NOTE** The example data included in this package does not yield the plot above. This is just an example plot generated from the full dataset.
+**NOTE:** The example data included in this package should yield a plot very similar to the one above. 
 
 
 ### Running scisorseqr
 
-The scisorseqr package was built with the goal of performing differential isoform expression tests between samples either at the cell-type level using single cell barcodes, or at the spatial level using spatial 'spot' barcodes. The package performs extensive QC and filtering of the data to ensure that only barcoded, full-length, spliced reads are taken into consideration. Due to the rigorous filtering that the package performs as well as the the data formats it generates, we recommend users run that pipeline to ensure the highest quality reads make it into the ScisorWiz plot.
+The [scisorseqr](https://github.com/noush-joglekar/scisorseqr/) package was built with the goal of performing differential isoform expression tests between samples either at the cell-type level using single cell barcodes, or at the spatial level using spatial 'spot' barcodes. The package performs extensive QC and filtering of the data to ensure that only barcoded, full-length, spliced reads are taken into consideration. Due to the rigorous filtering that the package performs as well as the the data formats it generates, we recommend users run that pipeline to ensure the highest quality reads make it into the ScisorWiz plot.
 
 Instead of multiple files containing various pieces of information about a read, scisorseqr combines all the necessary information needed to produce the isoform plot. Particularly, it combines the read name along with a cell type annotation, barcode, and UMI information in columns of the file, and additionally collates the coordinates of exons that map to a read within a single column of this file as opposed to having multiple lines e.g. in a GTF format
 
 We have included the output from scisorseqr i.e. the AllInfo.gz file, which is used as input for the ScisorWiz isoform plot. However, if the user wishes to run the whole pipeline including the steps of scisorseqr, we have provided the necessary input for two example genes: *Snap25* and *Pkm*
 
-The user will have to download bed files for annotated CAGE peaks and PolyA sites. If the user wishes to proceed
-without them, simply set the parameter filterFullLength=FALSE in Step3 below
+The user will have to download bed files for annotated CAGE peaks and PolyA sites. If the user wishes to proceed without them, simply set the parameter filterFullLength=FALSE in Step3 in the code chunk below:
+
+**NOTE:** You must download the scisorseqr package to run the following code.
 
 ```{r scisorseqr, eval=FALSE, echo=TRUE}
 
@@ -192,7 +217,8 @@ seqDir <- args[6]
 print("++++++++ Step 1: Getting barcodes and filtering those reads out")
 
 fqFolderPath <- system.file("extdata/", "userInput/fqFolder/", package = "ScisorWiz")
-ctAssignments <- system.file("extdata/", "userInput/barcode_cellType_assignments", package = "ScisorWiz")
+ctAssignments <- system.file("extdata/", "userInput/barcode_cellType_assignments",
+                             package = "ScisorWiz")
 
 GetBarcodes(fqFolder=fqFolderPath,
         BCClustAssignFile=ctAssignments,
@@ -268,7 +294,7 @@ ScisorWiz_2File(gencodeAnno = "gencodeAnnoFile.gz",
                 ci = .05, mismatchCutoff = .05, outputDir = "outputDir/",
                 mismatchFile = "Snap25.mismatches.txt.gz")
 ```
-**NOTE** The data included in the package is not for this function due to raw file size, to test ScisorWiz using included data, please refer to Pipeline Option 1 - ScisorWiz_AllInfo section example.
+**NOTE:** The data included in the package is not for this function due to raw file size, to test ScisorWiz using included data, please refer to Pipeline Option 1 - ScisorWiz_AllInfo section example.
 
 
 # Section 2 - Optional Pre-processing: Getting SNVs with MismatchFinder Function
@@ -303,18 +329,18 @@ User will see the output directory with a subdirectory specifically named for th
 :------------------------:|:-----------------:|
 136781282_136781283_A;136781282_136781283_C|136781219_C;136781421_C|
 
+**NOTE:** In order to run the MismatchFinder function, the user must install samtools. Installation for samtools can be found via the following link: [samtools](https://github.com/samtools/samtools)
 
 # Section 3 - Option to Create Interactive Plot
-When calling the ScisorWiz_AllInfo or ScisorWiz_2File functions, users have an option to create an
-interactive plot in which dynamic, windowed zooming and panning functionality will allow the user to explore the plot printout closely. For this option, the user must specify:
+When calling the ScisorWiz_AllInfo or ScisorWiz_2File functions, users have an option to create an interactive plot in which dynamic, windowed zooming and panning functionality will allow the user to explore the plot printout closely. For this option, the user must specify:
 
 ```{r ScisorWiz_AllInfo_interactive, eval=FALSE, echo=TRUE}
 library(ScisorWiz)
 
-gencodeAnnoFile <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
+gencodeAnnoFile <- system.file("extdata", "gencode.vM21.annotation.gtf.gz",
                            package = "ScisorWiz")
-allInfoFile <- system.file("extdata/", "userInput/AllInfo.gz", package = "ScisorWiz")
-cTypeFile <- system.file("extdata/", "userInput/celltypeFile_Snap25.tab", 
+allInfoFile <- system.file("extdata", "userInput/AllInfo.gz", package = "ScisorWiz")
+cTypeFile <- system.file("extdata", "userInput/cellTypeFile_Snap25.tab", 
                          package = "ScisorWiz")
 
 ## Run command without plotting mismatches
@@ -325,6 +351,6 @@ ScisorWiz_AllInfo(gencodeAnno = gencodeAnnoFile, AllInfoInput = allInfoFile,
 
 When this option is chosen, the output plots will be contained in two files. The first is a .jpg file which will be visually different than the default pdf plot. The second output file is an interactive html file which is automatically made using the .jpg file. Opening the html file will allow the user to interact with the plot, zooming and panning throughout it for a deeper look at any data of interest.
 
-**NOTE** The jpg and html files are intended to be used for exploratory purposes only. If you would like to use a ScisorWiz plot as a figure in a paper or presentation, please keep the interactive option set to "n" and use the pdf version of the plot. Thank you!
+**NOTE:** The .jpg and html files are intended to be used for exploratory purposes only. If you would like to use a ScisorWiz plot as a figure in a paper or presentation, please keep the interactive option set to "n" and use the pdf version of the plot. Thank you!
 
 ## Done!

@@ -7,13 +7,18 @@ knitr::opts_chunk$set(
 ## ----demonstrateMan, include = TRUE, eval = FALSE-----------------------------
 #  ?ScisorWiz_AllInfo
 
+## ----ViewAllInfoFile, eval=FALSE, echo=TRUE-----------------------------------
+#  library(ScisorWiz)
+#  allInfoExampleFile <- system.file("extdata", "userInput/AllInfo", package = "ScisorWiz")
+#  system(paste("cat", allInfoExampleFile))
+
 ## ----ScisorWiz_AllInfo_NoMis, eval=FALSE, echo=TRUE---------------------------
 #  library(ScisorWiz)
 #  
-#  gencodeAnnoFile <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
+#  gencodeAnnoFile <- system.file("extdata", "gencode.vM21.annotation.gtf.gz",
 #                             package = "ScisorWiz")
-#  allInfoFile <- system.file("extdata/", "userInput/AllInfo.gz", package = "ScisorWiz")
-#  cTypeFile <- system.file("extdata/", "userInput/celltypeFile_Snap25.tab",
+#  allInfoFile <- system.file("extdata", "userInput/AllInfo.gz", package = "ScisorWiz")
+#  cTypeFile <- system.file("extdata", "userInput/cellTypeFile_Snap25.tab",
 #                           package = "ScisorWiz")
 #  
 #  ## Run command without plotting mismatches
@@ -21,24 +26,24 @@ knitr::opts_chunk$set(
 #                    cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1,
 #                    ci = .05, outputDir = "outputDir/")
 
-## ----plot1, out.width = '60%', echo=F-----------------------------------------
-knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_noMis.pdf")
+## ----plot1, out.width = '50%', echo=F-----------------------------------------
+knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_testdata_noMis.pdf")
 
 ## ----ScisorWiz_AllInfo_Mismatches, eval=FALSE, echo=TRUE----------------------
 #  ##___________________________________OR____________________________________##
 #  
 #  library(ScisorWiz)
 #  
-#  # If the optional mismatchFinder function hasn't been run, the mismatches file
-#  # is located in extData/, rather than within the outputDir subdirectory. This is
-#  # where the example mismatches file is located.
+#  # In order to retain a smaller overall size for the ScisorWizpackage, the
+#  # example data mismatches file is located in extData/, rather than within the
+#  # outputDir subdirectory where normal output from the first step would go.
 #  
-#  gencodeAnnoFile <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
+#  gencodeAnnoFile <- system.file("extdata", "gencode.vM21.annotation.gtf.gz",
 #                             package = "ScisorWiz")
-#  allInfoFile <- system.file("extdata/", "AllInfo.gz", package = "ScisorWiz")
-#  cTypeFile <- system.file("extdata/", "userInput/celltypeFile",
+#  allInfoFile <- system.file("extdata", "AllInfo.gz", package = "ScisorWiz")
+#  cTypeFile <- system.file("extdata", "userInput/cellTypeFile_Snap25.tab",
 #                           package = "ScisorWiz")
-#  mismatchesFile <- system.file("extdata/", "Snap25.mismatches.txt.gz",
+#  mismatchesFile <- system.file("extdata", "Snap25.mismatches.txt.gz",
 #                             package = "ScisorWiz")
 #  
 #  ## Run command with plotting mismatches
@@ -47,8 +52,8 @@ knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_noMis.pdf")
 #                    ci = .05, mismatchCutoff = .05,
 #                    outputDir = "outputDir/", mismatchFile = mismatchesFile)
 
-## ----plot2, out.width = '60%', echo=F-----------------------------------------
-knitr::include_graphics("../man/figures/Snap25_Isoform_Plot.pdf")
+## ----plot2, out.width = '50%', echo=F-----------------------------------------
+knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_testdata.pdf")
 
 ## ----scisorseqr, eval=FALSE, echo=TRUE----------------------------------------
 #  
@@ -63,7 +68,8 @@ knitr::include_graphics("../man/figures/Snap25_Isoform_Plot.pdf")
 #  print("++++++++ Step 1: Getting barcodes and filtering those reads out")
 #  
 #  fqFolderPath <- system.file("extdata/", "userInput/fqFolder/", package = "ScisorWiz")
-#  ctAssignments <- system.file("extdata/", "userInput/barcode_cellType_assignments", package = "ScisorWiz")
+#  ctAssignments <- system.file("extdata/", "userInput/barcode_cellType_assignments",
+#                               package = "ScisorWiz")
 #  
 #  GetBarcodes(fqFolder=fqFolderPath,
 #          BCClustAssignFile=ctAssignments,
@@ -129,10 +135,10 @@ knitr::include_graphics("../man/figures/Snap25_Isoform_Plot.pdf")
 ## ----ScisorWiz_AllInfo_interactive, eval=FALSE, echo=TRUE---------------------
 #  library(ScisorWiz)
 #  
-#  gencodeAnnoFile <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
+#  gencodeAnnoFile <- system.file("extdata", "gencode.vM21.annotation.gtf.gz",
 #                             package = "ScisorWiz")
-#  allInfoFile <- system.file("extdata/", "userInput/AllInfo.gz", package = "ScisorWiz")
-#  cTypeFile <- system.file("extdata/", "userInput/celltypeFile_Snap25.tab",
+#  allInfoFile <- system.file("extdata", "userInput/AllInfo.gz", package = "ScisorWiz")
+#  cTypeFile <- system.file("extdata", "userInput/cellTypeFile_Snap25.tab",
 #                           package = "ScisorWiz")
 #  
 #  ## Run command without plotting mismatches
