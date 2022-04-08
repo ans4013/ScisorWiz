@@ -44,7 +44,7 @@
 ScisorWiz_AllInfo <- function(gencodeAnno, AllInfoInput, cellTypeFile, gene,
                               cluster=1, ci=.05, mismatchCutoff=.05, outputDir,
                               mismatchFile=NULL, zoom="n", interactive = "n") {
-  cat("================= Handling arguments =================\n")
+  cat("=================== Handling arguments ===================\n")
 
   dir.create(outputDir, recursive = T)
 

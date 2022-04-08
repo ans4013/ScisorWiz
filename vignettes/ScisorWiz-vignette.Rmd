@@ -145,7 +145,7 @@ Example of the output at the top of next page:
 
 The output after running the data through the ScisorWiz_AllInfo function without mismatches is as follows:
 
-```{r plot1, out.width = '50%', echo=F}
+```{r plot1, fig.align="center", out.width = '50%', echo=F}
 knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_testdata_noMis.pdf")
 ```
 
@@ -165,7 +165,7 @@ library(ScisorWiz)
 
 gencodeAnnoFile <- system.file("extdata", "gencode.vM21.annotation.gtf.gz",
                            package = "ScisorWiz")
-allInfoFile <- system.file("extdata", "AllInfo.gz", package = "ScisorWiz")
+allInfoFile <- system.file("extdata", "userInput/AllInfo.gz", package = "ScisorWiz")
 cTypeFile <- system.file("extdata", "userInput/cellTypeFile_Snap25.tab", 
                          package = "ScisorWiz")
 mismatchesFile <- system.file("extdata", "Snap25.mismatches.txt.gz",
@@ -184,7 +184,7 @@ Example of the output at the top of next page:
 
 The output after running the data through the MismatchFinder function and then the ScisorWiz_AllInfo function is as follows:
 
-```{r plot2, out.width = '50%', echo=F}
+```{r plot2, fig.align="center", out.width = '50%', echo=F}
 knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_testdata.pdf")
 ```
 
@@ -352,5 +352,8 @@ ScisorWiz_AllInfo(gencodeAnno = gencodeAnnoFile, AllInfoInput = allInfoFile,
 When this option is chosen, the output plots will be contained in two files. The first is a .jpg file which will be visually different than the default pdf plot. The second output file is an interactive html file which is automatically made using the .jpg file. Opening the html file will allow the user to interact with the plot, zooming and panning throughout it for a deeper look at any data of interest.
 
 **NOTE:** The .jpg and html files are intended to be used for exploratory purposes only. If you would like to use a ScisorWiz plot as a figure in a paper or presentation, please keep the interactive option set to "n" and use the pdf version of the plot. Thank you!
+
+# Section 4 - UCSC Genome Browser Reference File
+As an additional way to explore the data for the user's desired gene and cell types, ScisorWiz produces a file entitled (gene_name).ucscReference.gtf.gz. This file can be uploaded directly by clicking the link here: [UCSC Genome Browser](https://genome.ucsc.edu/cgi-bin/hgGateway) and clicking on the "Custom Tracks" option on the "My Data" dropdown tab. Once you have accessed this page, click the "add custom tracks" button and you will be redirected to a page with a series of empty text boxes. Above the first box will be an option to upload a file. Upload the (gene_name).ucscReference.gtf.gz file, and you can then access your data on the UCSC Genome Browser.
 
 ## Done!

@@ -40,7 +40,7 @@ devtools::install_github('ans4013/ScisorWiz',build_vignettes = TRUE)
 
 ## Workflow
 
-``` {r prettyGraph, echo=FALSE, out.width = '60%'}
+``` {r prettyGraph, echo=FALSE, out.width = '100%'}
 knitr::include_graphics("man/figures/ScisorWiz_Workflow.png")
 ```
 

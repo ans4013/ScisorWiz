@@ -487,7 +487,7 @@ plotGenes<-function(annoGTF, aNames, annotationHeader, headerNames, colAnno, col
     }
 
     # Start plotting from top down
-    cat("## the plot\n");
+    cat("## Creating the plot\n");
     ytop = 120 + (12*numAnnoTrans)
     for(i in 1:numCT){
         ytop = ytop + (2*get(numAlignedReads[i])) + 25

@@ -26,7 +26,7 @@ knitr::opts_chunk$set(
 #                    cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1,
 #                    ci = .05, outputDir = "outputDir/")
 
-## ----plot1, out.width = '50%', echo=F-----------------------------------------
+## ----plot1, fig.align="center", out.width = '50%', echo=F---------------------
 knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_testdata_noMis.pdf")
 
 ## ----ScisorWiz_AllInfo_Mismatches, eval=FALSE, echo=TRUE----------------------
@@ -40,7 +40,7 @@ knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_testdata_noMis.pdf")
 #  
 #  gencodeAnnoFile <- system.file("extdata", "gencode.vM21.annotation.gtf.gz",
 #                             package = "ScisorWiz")
-#  allInfoFile <- system.file("extdata", "AllInfo.gz", package = "ScisorWiz")
+#  allInfoFile <- system.file("extdata", "userInput/AllInfo.gz", package = "ScisorWiz")
 #  cTypeFile <- system.file("extdata", "userInput/cellTypeFile_Snap25.tab",
 #                           package = "ScisorWiz")
 #  mismatchesFile <- system.file("extdata", "Snap25.mismatches.txt.gz",
@@ -52,7 +52,7 @@ knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_testdata_noMis.pdf")
 #                    ci = .05, mismatchCutoff = .05,
 #                    outputDir = "outputDir/", mismatchFile = mismatchesFile)
 
-## ----plot2, out.width = '50%', echo=F-----------------------------------------
+## ----plot2, fig.align="center", out.width = '50%', echo=F---------------------
 knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_testdata.pdf")
 
 ## ----scisorseqr, eval=FALSE, echo=TRUE----------------------------------------

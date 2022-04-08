@@ -59,7 +59,7 @@ devtools::install_github('ans4013/ScisorWiz',build_vignettes = TRUE)
 
 ## Workflow
 
-<img src="man/figures/ScisorWiz_Workflow.png" width="60%" />
+<img src="man/figures/ScisorWiz_Workflow.png" width="100%" />
 
 Some example data is included with this package to allow the user to
 explore the input data and reproduce the use case. For example, running
