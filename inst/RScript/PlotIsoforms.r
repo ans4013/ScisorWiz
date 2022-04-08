@@ -61,7 +61,7 @@ getClustering<-function(a, m, cluster, num) {
             readOrder = readSample[order(match(readSample,readOrder))]
         }
     }
-    printOut <- paste0("length(order", num ,"): ", length(readOrder))
+    printOut <- paste0("Number of reads - cell type ", num ,": ", length(readOrder))
     cat(printOut, "\n")
     return(readOrder)
 }
@@ -386,10 +386,10 @@ plotGenes<-function(annoGTF, aNames, annotationHeader, headerNames, colAnno, col
                     windowEnd, drawAxis, altExons, projections, readLengths, CI,
                     mismatchCutoff, specialColor, numCT){
     
-    cat("## starting plotGenes\n")
+    cat("## Plotting genes\n")
     anno=read.table(annoGTF)
 
-    cat("## reading alignments\n")
+    cat("## Reading alignments\n")
     emptyDF=data.frame(factor(),factor(),factor(),integer(),integer(),factor(),factor(),factor(),factor())
 
     #for(i in 1:numCT){
@@ -442,7 +442,6 @@ plotGenes<-function(annoGTF, aNames, annotationHeader, headerNames, colAnno, col
     if(from < 1) {
         from = 1
     }
-    cat("## the general plot\n");
     annoTransIndexes=which(anno[,3]=="transcript");
     numAnnoTrans=length(annoTransIndexes);
     y=anno;
@@ -455,7 +454,7 @@ plotGenes<-function(annoGTF, aNames, annotationHeader, headerNames, colAnno, col
     anno=y
     annoTransIndexes=which(anno[,3]=="transcript");
     numAnnoTrans=length(annoTransIndexes);
-    cat("numAnnoTrans =",numAnnoTrans,"\n");
+    cat("Number of annotation transcripts =",numAnnoTrans,"\n");
 
     # Set width and center of plot
     showLength=to-from+1;
@@ -468,7 +467,7 @@ plotGenes<-function(annoGTF, aNames, annotationHeader, headerNames, colAnno, col
 
     # If user chose to plot mismatches, enter this step.
     if(length(args) > 14){
-        cat("## getting alignment IDs and numbers\n")
+        cat("## Getting alignment IDs and numbers\n")
         
         # Create tables from the mismatch files
         SNVTable = read.table(SNVFile)
@@ -476,7 +475,7 @@ plotGenes<-function(annoGTF, aNames, annotationHeader, headerNames, colAnno, col
         deleteTable = read.table(deleteFile)
 
         # Get mismatches for each cell type
-        cat("Getting SNVs, insertions, and deletions -- May take some time depending on number of reads\n")
+        cat("## Getting SNVs, insertions, and deletions -- May take some time depending on number of reads\n")
         for(i in 1:numCT){
             assign(r2MNames[i], getMismatches(aNames[i], SNVTable, insertTable, deleteTable))
         }
@@ -530,8 +529,8 @@ plotGenes<-function(annoGTF, aNames, annotationHeader, headerNames, colAnno, col
     # Begin plotting cell types, adding space to prevent overlap of cell type
     # names and reads
     for(i in 1:numCT){
-        cat("# the aligned reads",i, "\n");
-        cat("enter with ",ytop,"; using ", get(numAlignedReads[i]),"reads\n")
+        cat("# Plotting the aligned reads for cell type ",i, "\n");
+        #cat("enter with ",ytop,"; using ", get(numAlignedReads[i]),"reads\n")
         newLineNumber = plotReads(get(aNames[i]), ytop, get(numAlignedReads[i]),
                                   get(headerNames[i]), get(orderNames[i]), from, to,
                                   center, cexT, get(colReads[i]), localExonRadius,
@@ -540,8 +539,7 @@ plotGenes<-function(annoGTF, aNames, annotationHeader, headerNames, colAnno, col
         ytop=ytop - (2*get(numAlignedReads[i])) - 40
     }
 
-    cat("# the annotated transcripts\n")
-    cat("enter with ",ytop,";\n")
+    cat("# Plotting the annotated transcripts\n")
 
     lineNumber=ytop
     lineNumber=lineNumber-10-5
@@ -776,12 +774,12 @@ par(oma = omaVector);
 
 ########################################
 # 3. parsing data and plotting:
-cat("# 3. parsing data and plotting:\n");
+cat("## Parsing data and plotting:\n");
 
 plot(c(1:10),c(1:10),col="white",xlab="",ylab="",main="",axes=FALSE)
 plot(c(1:10),c(1:10),col="white",xlab="",ylab="",main="",axes=FALSE)
 
-cat("number of cell types:", numCT, "\n")
+cat("Number of cell types:", numCT, "\n")
 
 emptyDF=data.frame(factor(),factor(),factor(),integer(),integer(),factor(),factor(),factor(),factor())
 
@@ -795,11 +793,10 @@ if(interactive == "y"){
 
 aNames <- paste('a',1:numCT,sep='')
 for(i in 1:numCT){
-    cat("reading", as.character(cellTypeTableWithFileNames[i,1]), "data\n")
+    cat("Reading in cell type", i, ":", as.character(cellTypeTableWithFileNames[i,1]), "data\n")
     assign(aNames[i], tryCatch({res=read.table(as.character(cellTypeTableWithFileNames[i,2]))}, warning = function(w) {cat("a warning was raised\n"); return(emptyDF); }, error = function(e) {return(emptyDF); }))
 }
 
-cat("reading in data\n")
 orderMatrix=read.table(orderMatrixFile);
 orderMatrixSub=orderMatrix
 m=as.data.frame(orderMatrixSub[,2])
