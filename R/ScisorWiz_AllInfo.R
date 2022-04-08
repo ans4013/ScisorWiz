@@ -78,7 +78,7 @@ ScisorWiz_AllInfo <- function(gencodeAnno, AllInfoInput, cellTypeFile, gene,
 
   if(!is.null(mismatchFile)){
     if(!file.exists(mismatchFile)){
-    warning('Mismatch file path not valid. Please retry.')
+      warning('Mismatch file path not valid. Please retry.')
     }
   }
 
@@ -162,12 +162,12 @@ ScisorWiz_AllInfo <- function(gencodeAnno, AllInfoInput, cellTypeFile, gene,
   system(runR)
 
   if(interactive == "y"){
-    cat("ENTERING INTERACTIVE PLOT\n")
+    cat("================Creating interactive plot=================\n")
     interactiveScript <- system.file("RScript", "interactivePlot.R", package = "ScisorWiz")
     plotPath <- paste0(genePlotOutput, plotName, ".jpg")
     htmlPath <- paste0(genePlotOutput, plotName, ".html")
-    cat(paste(plotPath, "\n"))
-    cat(paste(htmlPath, "\n"))
+    cat(paste("Path to .jpg plot file", plotPath, "\n"))
+    cat(paste("Path to interactive html plot file", htmlPath, "\n"))
     runInteractive <- paste("Rscript", interactiveScript, plotPath, htmlPath)
 
     system(runInteractive)
