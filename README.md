@@ -11,7 +11,10 @@ across multiple cell types, and provides various sorting options for the
 user to appraise the data in different ways. ScisorWiz provides a clear
 picture of cell-type specific isoform expression through various
 clustering methods and highlighting features such as separate colors for
-alternative exons and Single Nucleotide Variants (SNVs).
+alternative exons and Single Nucleotide Variants (SNVs). Additionally,
+this package includes a feature in which the user can choose to generate
+an interactive plot for exploratory purposes. This will generate a .jpg
+file version and an interactive html file version of the plot.
 
 ------------------------------------------------------------------------
 
@@ -26,7 +29,7 @@ for the simplest use case we do require an installation of:
 Depending on the user’s needs, there are a few optional steps that
 require additional software installation:
 
--   for SNP calling and representing insertions, deletions, and
+-   for SNV calling and representing insertions, deletions, and
     substitutions, we require
     [samtools](https://github.com/samtools/samtools)
 -   for an exploratory and interactive view of the isoform plot which
@@ -61,10 +64,10 @@ devtools::install_github('ans4013/ScisorWiz',build_vignettes = TRUE)
 Some example data is included with this package to allow the user to
 explore the input data and reproduce the use case. For example, running
 the **ScisorWiz_AllInfo** function can be running by providing a path to
-the input file ([AllInfo.gz](inst/extdata/userInput/AllInfo.gz)), the
-gene name (“*Snap25*”), the clustering parameter (1 for intron chain),
-and a mismatch file containing SNP information
-(Snap25.mismatches.txt.gz) using the following command:
+the input file (AllInfo.gz), the gene name (“*Snap25*”), the clustering
+parameter (1 for intron chain), and a mismatch file (optional)
+containing SNV information (Snap25.mismatches.txt.gz) using the
+following command:
 
 ``` r
 library(ScisorWiz)
