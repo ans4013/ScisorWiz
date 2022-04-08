@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 #  cTypeFile <- system.file("extdata", "userInput/cellTypeFile_Snap25.tab",
 #                           package = "ScisorWiz")
 #  
-#  ## Run command without plotting mismatches
+#  ## Get static plot without plotting mismatches
 #  ScisorWiz_AllInfo(gencodeAnno = gencodeAnnoFile, AllInfoInput = allInfoFile,
 #                    cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1,
 #                    ci = .05, outputDir = "outputDir/")
@@ -46,7 +46,7 @@ knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_testdata_noMis.pdf")
 #  mismatchesFile <- system.file("extdata", "Snap25.mismatches.txt.gz",
 #                             package = "ScisorWiz")
 #  
-#  ## Run command with plotting mismatches
+#  ## Get static plot with plotting mismatches
 #  ScisorWiz_AllInfo(gencodeAnno = gencodeAnnoFile, AllInfoInput = allInfoFile,
 #                    cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1,
 #                    ci = .05, mismatchCutoff = .05,
@@ -58,12 +58,6 @@ knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_testdata.pdf")
 ## ----scisorseqr, eval=FALSE, echo=TRUE----------------------------------------
 #  
 #  library(scisorseqr)
-#  
-#  genomeFa <- args[2]
-#  annoGZ <- args[3]
-#  cageBedFile <- args[4]
-#  polyaBedFile <- args[5]
-#  seqDir <- args[6]
 #  
 #  print("++++++++ Step 1: Getting barcodes and filtering those reads out")
 #  
@@ -86,10 +80,14 @@ knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_testdata.pdf")
 #  
 #  print("++++++++ Step 3: Map and filter function")
 #  
-#  gencodeAnnoFile <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz", package = "ScisorWiz")
-#  chr_fa_dir <- '~/genomes/M.musculus/mm10/chromFa/' ## Please provide a path to a directory containing one fa.gz file per chromosome
+#  gencodeAnnoFile <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
+#                                 package = "ScisorWiz")
+#  ## Please provide a path to a directory containing one fa.gz file per chromosome
+#  ## below
+#  chr_fa_dir <- '~/genomes/M.musculus/mm10/chromFa/'
 #  
-#  # Below two arguments are optional. Can instead set filterFullLength=FALSE in the function
+#  # Below two arguments are optional. Can instead set filterFullLength=FALSE in
+#  # the function
 #  polyABed_path <- 'atlas.clusters_chr.mm10.2-0.bed.gz'
 #  cageBed_path <- 'mm10_fair+new_CAGE_peaks_phase1and2.bed.gz'
 #  
@@ -100,11 +98,12 @@ knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_testdata.pdf")
 #          seqDir=chr_fa_dir, genomeVersion='mm10')
 #  
 #  print("++++++++ Step 4: Getting All-Info files")
-#  ## If default parameters for Step 1 are used, the the barcodeOutput file will be autogenenerated in the
-#  ## "OutputFiltered" folder
+#  ## If default parameters for Step 1 are used, the the barcodeOutput file will be
+#  ##autogenenerated in the "OutputFiltered" folder
 #  
 #  InfoPerLongRead(barcodeOutputFile='OutputFiltered/FilteredDeconvBC_P7HIPP_subset.csv',
-#          mapAndFilterOut='LRProcessingOutput/', minTimesIsoObserve=1, rmTmpFolder=FALSE)
+#                  mapAndFilterOut='LRProcessingOutput/', minTimesIsoObserve=1,
+#                  rmTmpFolder=FALSE)
 #  
 #  print("+++++++ All done!")
 
@@ -141,7 +140,7 @@ knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_testdata.pdf")
 #  cTypeFile <- system.file("extdata", "userInput/cellTypeFile_Snap25.tab",
 #                           package = "ScisorWiz")
 #  
-#  ## Run command without plotting mismatches
+#  ## Get interactive plot without plotting mismatches
 #  ScisorWiz_AllInfo(gencodeAnno = gencodeAnnoFile, AllInfoInput = allInfoFile,
 #                    cellTypeFile = cTypeFile, gene = "Snap25", cluster = 1,
 #                    ci = .05, outputDir = "outputDir/", interactive = "y")
