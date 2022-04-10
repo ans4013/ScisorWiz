@@ -80,7 +80,7 @@ knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_testdata.pdf")
 #  
 #  print("++++++++ Step 3: Map and filter function")
 #  
-#  gencodeAnnoFile <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
+#  gencodeAnnoFile <- system.file("extdata", "gencode.vM21.annotation.gtf.gz",
 #                                 package = "ScisorWiz")
 #  ## Please provide a path to a directory containing one fa.gz file per chromosome
 #  ## below
@@ -108,7 +108,6 @@ knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_testdata.pdf")
 #  print("+++++++ All done!")
 
 ## ----ScisorWiz_2File, eval=FALSE, echo=TRUE-----------------------------------
-#  
 #  
 #  ## Run command without plotting mismatches
 #  ScisorWiz_2File(gencodeAnno = "gencodeAnnoFile.gz", gffInput = "CagePolyA.gff.gz",

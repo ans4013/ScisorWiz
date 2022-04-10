@@ -97,8 +97,7 @@ Entering the command for the ScisorWiz_AllInfo pipeline option gives the user th
   - Cell type file listing user-specified cell types of interest and the display color of each (example of document format below)\*
   - Gene of interest
   - Clustering method\*\*
-  - Optional: Confidence interval (CI) for alternative exon consideration.
-    Default value for exon inclusion rate is .05 (5% < altExon inclusion < 95%)
+  - Optional: Confidence interval (CI) for alternative exon consideration. We recommend for lower-quality reads to set this argument to .2 (20% < altExon inclusion < 80%). Default value for exon inclusion rate is .05 (5% < altExon inclusion < 95%)
   - Optional: Mismatch Cutoff to eliminate sequencing errors. Default value is
     .05 (5% < mismatch inclusion < 95%)
   - Output directory in which the user wants output files stored
@@ -227,7 +226,7 @@ MMalign(fqFolder=fqFolderPath,mmProgPath,
 
 print("++++++++ Step 3: Map and filter function")
 
-gencodeAnnoFile <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
+gencodeAnnoFile <- system.file("extdata", "gencode.vM21.annotation.gtf.gz",
                                package = "ScisorWiz")
 ## Please provide a path to a directory containing one fa.gz file per chromosome
 ## below
@@ -265,8 +264,7 @@ Without the AllInfo file from the scisorseqr pipeline, the user will not be able
   - Cell type file listing user-specified cell types of interest and the display
     color of each
   - Gene of interest
-  - Optional: Confidence interval (CI) for alternative exon consideration.
-    Default value for exon inclusion rate is .05 (5% < altExon inclusion < 95%)
+  - Optional: Confidence interval (CI) for alternative exon consideration. We recommend for lower-quality reads to set this argument to .2 (20% < altExon inclusion < 80%). Default value for exon inclusion rate is .05 (5% < altExon inclusion < 95%)
   - Optional: Mismatch Cutoff to eliminate sequencing errors. Default value is
     .05 (5% < mismatch inclusion < 95%)
   - Output directory in which the user wants output files stored
@@ -275,7 +273,6 @@ Without the AllInfo file from the scisorseqr pipeline, the user will not be able
   - Optional: Interactive plot (for exploratory purposes, see Section 3)
   
 ```{r ScisorWiz_2File, eval=FALSE, echo=TRUE}
-
 
 ## Run command without plotting mismatches
 ScisorWiz_2File(gencodeAnno = "gencodeAnnoFile.gz", gffInput = "CagePolyA.gff.gz",
