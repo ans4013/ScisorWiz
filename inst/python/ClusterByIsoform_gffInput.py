@@ -600,6 +600,10 @@ for line in annoContents:
                 remapAnno.append(gene)
                 annoRemap.append(remapAnno)
 
+# Sort list of lists by the transcript ID to ensure the logic of the next step
+# works correctly
+annoRemap = sorted(annoRemap, key=lambda x:x[11])
+
 # Now we look for all transcript IDs and assign remapped coordinates to the
 #    first and last base associated with that transcript ID
 trans = [] 
