@@ -304,8 +304,8 @@ Prior to using ScisorWiz main pipeline, the user has the option to run the Misma
 ```{r MismatchFinder, eval=FALSE, echo=TRUE}
 library(ScisorWiz)
 # Optional: download the reference genome fasta
-system(paste('wget https://hgdownload.soe.ucsc.edu/goldenPath/mm10/bigZips/mm10.fa.gz',
-             '&& gzip mm10.fa.gz'))
+system(paste("wget https://hgdownload.soe.ucsc.edu/goldenPath/mm10/bigZips/mm10.fa.gz",
+             "&& gzip mm10.fa.gz"))
 gencodeAnnoFile <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
                                package = "ScisorWiz")
 bam <- system.file("extdata/", "userInput/fqFolder/sorted.Snap25.bam",
@@ -332,7 +332,7 @@ User will see the output directory with a subdirectory specifically named for th
 
 - outputDir/Snap25
     - Snap25.info.tab (Provides chromosome, start, and end for MismatchFinder script)
-    - Snap25.mismatches.txt.gz (The same file as the one in `inst/extdata`, one line per readID with following structure:)
+    - Snap25.mismatches.txt.gz (The same file as the one in [`inst/extdata`](../inst/extdata), it may contain different variants from those in plots we have shown as the bam input is a subset of original files we used in analyses; one line per readID with following structure:)
     
 | chrom | readID | SNV | 
 |:---:|:---------------------:|:--------:|
