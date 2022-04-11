@@ -21,6 +21,7 @@ The *ScisorWiz* package creates a plot utilizing single-cell long-read RNA seque
 
   * python version >= 3.7 with the following libraries:
     * pandas
+    * pysam
   * R version >= 3.5 with the following packages:
     * hash
     * Optional (for interactive option)
@@ -301,19 +302,37 @@ Prior to using ScisorWiz main pipeline, the user has the option to run the Misma
   - Output directory in which the user wants the mismatch file stored
 
 ```{r MismatchFinder, eval=FALSE, echo=TRUE}
-## Run command
 library(ScisorWiz)
-MismatchFinder(BAM = "sorted.bestperRead.mapping.bam", fasta = "mm10.fa",
-               gencodeAnno = "gencode.vM21.annotation.gtf.gz", gene = "Snap25",
-               outputDir = "outputDir/")
+# Optional: download the reference genome fasta
+system(paste('wget https://hgdownload.soe.ucsc.edu/goldenPath/mm10/bigZips/mm10.fa.gz',
+             '&& gzip mm10.fa.gz'))
+gencodeAnnoFile <- system.file("extdata/", "gencode.vM21.annotation.gtf.gz",
+                               package = "ScisorWiz")
+bam <- system.file("extdata/", "userInput/fqFolder/sorted.Snap25.bam",
+                   package = "ScisorWiz")
+
+# Find mismatches in gene Snap25
+MismatchFinder(BAM = bam, fasta = "./mm10.fa", gencodeAnno = gencodeAnnoFile,
+               gene = "Snap25", outputDir = "outputDir/")
 ```
-**NOTE:** The data included in the package is not for this function due to raw file size. Please input your own files in order to test or run this function.
+
+```
+[1] "================= Handling arguments ================="
+[1] "===== Finding chromosome, start, and end of gene ====="
+[1] ".bam file = ~/ScisorWiz/inst/extdata/userInput/fqFolder/sorted.Snap25.bam"
+[1] ".fasta file = ./mm10.fa"
+[1] "Chromosome = chr2"
+[1] "Gene start = 136713453"
+[1] "Gene end = 136782428"
+[1] "Output directory = outputDir/"
+[1] "=============== Determining Mismatches ==============="
+```
 
 User will see the output directory with a subdirectory specifically named for the gene of interest:
 
 - outputDir/Snap25
     - Snap25.info.tab (Provides chromosome, start, and end for MismatchFinder script)
-    - Snap25.mismatches.txt.gz (One line per readID with following structure:)
+    - Snap25.mismatches.txt.gz (The same file as the one in `inst/extdata`, one line per readID with following structure:)
     
 | chrom | readID | SNV | 
 |:---:|:---------------------:|:--------:|
