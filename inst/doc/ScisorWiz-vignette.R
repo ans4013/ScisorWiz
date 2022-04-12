@@ -27,7 +27,7 @@ knitr::opts_chunk$set(
 #                    ci = .05, outputDir = "outputDir/")
 
 ## ----plot1, fig.align="center", out.width = '50%', echo=F---------------------
-knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_testdata_noMis.pdf")
+knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_testdata_AllInfo_NoMis.pdf")
 
 ## ----ScisorWiz_AllInfo_Mismatches, eval=FALSE, echo=TRUE----------------------
 #  ##___________________________________OR____________________________________##
@@ -43,8 +43,15 @@ knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_testdata_noMis.pdf")
 #  allInfoFile <- system.file("extdata", "userInput/AllInfo.gz", package = "ScisorWiz")
 #  cTypeFile <- system.file("extdata", "userInput/cellTypeFile_Snap25.tab",
 #                           package = "ScisorWiz")
+#  
+#  # If you have not run the MismatchFinder function (see Section 2 below), use the
+#  # included mismatches file by running the following line of code:
 #  mismatchesFile <- system.file("extdata", "Snap25.mismatches.txt.gz",
 #                             package = "ScisorWiz")
+#  
+#  # If you have run the MismatchFinder function, use the output created by the
+#  # function by running the following line of code:
+#  mismatchesFile <- "outputDir/Snap25/Snap25.mismatches.txt.gz"
 #  
 #  ## Get static plot with plotting mismatches
 #  ScisorWiz_AllInfo(gencodeAnno = gencodeAnnoFile, AllInfoInput = allInfoFile,
@@ -53,7 +60,7 @@ knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_testdata_noMis.pdf")
 #                    outputDir = "outputDir/", mismatchFile = mismatchesFile)
 
 ## ----plot2, fig.align="center", out.width = '50%', echo=F---------------------
-knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_testdata.pdf")
+knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_testdata_AllInfo.pdf")
 
 ## ----scisorseqr, eval=FALSE, echo=TRUE----------------------------------------
 #  
@@ -107,28 +114,69 @@ knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_testdata.pdf")
 #  
 #  print("+++++++ All done!")
 
-## ----ScisorWiz_2File, eval=FALSE, echo=TRUE-----------------------------------
+## ----ScisorWiz_2File_NoMis, eval=FALSE, echo=TRUE-----------------------------
 #  
 #  ## Run command without plotting mismatches
-#  ScisorWiz_2File(gencodeAnno = "gencodeAnnoFile.gz", gffInput = "CagePolyA.gff.gz",
-#                  genesInput = "reads2genes.gz",cellTypeFile = "cellTypeFile_Snap25.tab",
-#                  gene = "Snap25", ci = .05, outputDir = "outputDir/")
+#  library(ScisorWiz)
+#  gencodeAnnoFile <- system.file("extdata", "gencode.vM21.annotation.gtf.gz",
+#                             package = "ScisorWiz")
+#  gffFile <- system.file("extdata", "userInput/readinfo.gff.gz", package = "ScisorWiz")
+#  genesFile <- system.file("extdata", "userInput/readstogenes.genes.gz", package = "ScisorWiz")
+#  cTypeFile <- system.file("extdata", "userInput/cellTypeFile_Snap25.tab",
+#                           package = "ScisorWiz")
 #  
+#  ScisorWiz_2File(gencodeAnno = gencodeAnnoFile, gffInput = gffFile,
+#                  genesInput = genesFile, cellTypeFile = cTypeFile,
+#                  gene = "Snap25", ci = .05, outputDir = "outputDir/")
+
+## ----plot3, fig.align="center", out.width = '50%', echo=F---------------------
+knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_testdata_2File_NoMis.pdf")
+
+## ----ScisorWiz_2File_Mismatches, eval=FALSE, echo=TRUE------------------------
 #  ##___________________________________OR____________________________________##
 #  
 #  ## Run command with plotting mismatches
-#  ScisorWiz_2File(gencodeAnno = "gencodeAnnoFile.gz",
-#                  gffInput = "CagePolyA.gff.gz", genesInput = "reads2genes.gz",
-#                  cellTypeFile = "cellTypeFile_Snap25.tab",gene = "Snap25",
+#  library(ScisorWiz)
+#  gencodeAnnoFile <- system.file("extdata", "gencode.vM21.annotation.gtf.gz",
+#                             package = "ScisorWiz")
+#  gffFile <- system.file("extdata", "userInput/readinfo.gff.gz", package = "ScisorWiz")
+#  genesFile <- system.file("extdata", "userInput/readstogenes.genes.gz", package = "ScisorWiz")
+#  cTypeFile <- system.file("extdata", "userInput/cellTypeFile_Snap25.tab",
+#                           package = "ScisorWiz")
+#  
+#  # If you have not run the MismatchFinder function (see Section 2 below), use the
+#  # included mismatches file by running the following line of code:
+#  mismatchesFile <- system.file("extdata", "Snap25.mismatches.txt.gz",
+#                             package = "ScisorWiz")
+#  
+#  # If you have run the MismatchFinder function, use the output created by the
+#  # function by running the following line of code:
+#  mismatchesFile <- "outputDir/Snap25/Snap25.mismatches.txt.gz"
+#  
+#  ScisorWiz_2File(gencodeAnno = gencodeAnnoFile,
+#                  gffInput = gffFile, genesInput = genesFile,
+#                  cellTypeFile = cTypeFile, gene = "Snap25",
 #                  ci = .05, mismatchCutoff = .05, outputDir = "outputDir/",
-#                  mismatchFile = "Snap25.mismatches.txt.gz")
+#                  mismatchFile = mismatchesFile)
+
+## ----plot4, fig.align="center", out.width = '50%', echo=F---------------------
+knitr::include_graphics("../man/figures/Snap25_Isoform_Plot_testdata_2File_Mis.pdf")
 
 ## ----MismatchFinder, eval=FALSE, echo=TRUE------------------------------------
 #  ## Run command
 #  library(ScisorWiz)
-#  MismatchFinder(BAM = "sorted.bestperRead.mapping.bam", fasta = "mm10.fa",
-#                 gencodeAnno = "gencode.vM21.annotation.gtf.gz", gene = "Snap25",
-#                 outputDir = "outputDir/")
+#  
+#  # Optional: download the reference genome fasta
+#  system(paste("wget https://hgdownload.soe.ucsc.edu/goldenPath/mm10/bigZips/mm10.fa.gz",
+#               "&& gunzip mm10.fa.gz"))
+#  gencodeAnnoFile <- system.file("extdata", "gencode.vM21.annotation.gtf.gz",
+#                                 package = "ScisorWiz")
+#  bam <- system.file("extdata", "userInput/fqFolder/sorted.Snap25.bam",
+#                     package = "ScisorWiz")
+#  
+#  # Find mismatches for Snap25 gene data
+#  MismatchFinder(BAM = bam, fasta = "mm10.fa", gencodeAnno = gencodeAnnoFile,
+#                 gene = "Snap25", outputDir = "outputDir/")
 
 ## ----ScisorWiz_AllInfo_interactive, eval=FALSE, echo=TRUE---------------------
 #  library(ScisorWiz)
