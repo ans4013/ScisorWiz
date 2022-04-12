@@ -28,7 +28,7 @@ Depending on the user's needs, there are a few optional steps that require addit
 
 This package has been optimized to run with a single input file which contains all the information necessary for visualizing isoform expression across cell types (AllInfo.gz). This file is produced by the [scisorseqr](https://github.com/noush-joglekar/scisorseqr/) package, and we recommend the installation for a hassle-free process. However, the input for ScisorWiz can also be obtained by other means. For more information, please consult the [vignette](vignettes/ScisorWiz-vignette.pdf).
 
-The package has only been tested on CentOS x86_64 and macOS.
+The package has only been tested on a CentOS x86_64 machine and on macOS.
 
 ## Installation
 
@@ -62,7 +62,7 @@ interactive = "n")
 
 ```
 
-A step-by-step outline of the various functions is available as a [vignette](vignettes/ScisorWiz-vignette.pdf). To access it, run
+A step-by-step outline of the various functions is available as a vignette. To access it, run
 
 ``` r 
 browseVignettes("ScisorWiz")

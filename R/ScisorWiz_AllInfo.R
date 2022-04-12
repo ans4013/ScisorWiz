@@ -104,8 +104,6 @@ ScisorWiz_AllInfo <- function(gencodeAnno, AllInfoInput, cellTypeFile, gene,
                    gene, ci, outputDir)
   }
   system(runPy)
-
-  plotName <- paste0(gene, "_Isoform_Plot")
   annoRemap <- paste0(geneOutput, gene, ".anno_remap.gtf.gz")
   cellTypeFilewithFileNames <- paste0(geneOutput, gene,
                                       ".cellTypeFileWithFileNames.tab")
@@ -118,6 +116,7 @@ ScisorWiz_AllInfo <- function(gencodeAnno, AllInfoInput, cellTypeFile, gene,
   cat("==================== Running R script ====================\n")
   R_file <- system.file("RScript", "PlotIsoforms.r", package = "ScisorWiz")
   if(!is.null(mismatchFile)){
+    plotName <- paste0(gene, "_Isoform_Plot_wMismatches")
     SNVFile <- paste0(geneOutput, gene, ".SNVs.tab")
     insertionsFile <- paste0(geneOutput, gene, ".insertions.tab")
     deletionsFile <- paste0(geneOutput, gene, ".deletions.tab")
@@ -141,6 +140,7 @@ ScisorWiz_AllInfo <- function(gencodeAnno, AllInfoInput, cellTypeFile, gene,
     }
   }
   else{
+    plotName <- paste0(gene, "_Isoform_Plot")
     if(zoom == "y"){
       cat("Please enter exon number for left side of zoom window:\n")
       windowStart <- scan(what = integer)
@@ -166,8 +166,8 @@ ScisorWiz_AllInfo <- function(gencodeAnno, AllInfoInput, cellTypeFile, gene,
     interactiveScript <- system.file("RScript", "interactivePlot.R", package = "ScisorWiz")
     plotPath <- paste0(genePlotOutput, plotName, ".jpg")
     htmlPath <- paste0(genePlotOutput, plotName, ".html")
-    cat(paste("Path to .jpg plot file", plotPath, "\n"))
-    cat(paste("Path to interactive html plot file", htmlPath, "\n"))
+    cat(paste("Path to .jpg plot file:", plotPath, "\n"))
+    cat(paste("Path to interactive html plot file:", htmlPath, "\n"))
     runInteractive <- paste("Rscript", interactiveScript, plotPath, htmlPath)
 
     system(runInteractive)

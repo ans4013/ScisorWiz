@@ -173,8 +173,8 @@ ScisorWiz_2File <- function(gencodeAnno, gffInput, genesInput, cellTypeFile, gen
     } else {
       htmlPath <- paste0(genePlotOutput, plotName, ".html")
     }
-    cat(paste("Path to .jpg plot file", plotPath, "\n"))
-    cat(paste("Path to interactive html plot file", htmlPath, "\n"))
+    cat(paste("Path to .jpg plot file:", plotPath, "\n"))
+    cat(paste("Path to interactive html plot file:", htmlPath, "\n"))
     runInteractive <- paste("Rscript", interactiveScript, plotPath, htmlPath)
     
     system(runInteractive)
