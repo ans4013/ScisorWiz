@@ -651,10 +651,10 @@ if(cluster == 4){
 cat("Cluster method =", cluster, "\n")
 
 CI=args[11];
-CI = format(round(as.integer(CI), 2), nsmall=2)
-upper = 1 - as.double(CI)
+CI = format(round(as.numeric(CI), 2), nsmall=2)
+upper = 1 - as.numeric(CI)
 upper = format(round(upper, 2), nsmall=2)
-cat("Confidence Interval = ", as.double(CI), "-", as.double(upper),"\n");
+cat("Confidence Interval = ", CI, "-", upper,"\n");
 
 mismatchCutoff=args[12]
 cat("Mismatch Cutoff = ", mismatchCutoff, "\n")
