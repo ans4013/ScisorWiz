@@ -93,4 +93,4 @@ browseVignettes("ScisorWiz")
 ## Support
 
 We appreciate any and all inputs for improving ScisorWiz. Feel free to
-send us an [email](mailto:ans4013@med.cornell.edu).
+send us an [email](mailto:astein2050@gmail.com).
