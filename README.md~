@@ -54,7 +54,7 @@ The easiest way to install ScisorWiz is through
 [Github](https://github.com) with:
 
 ``` r
-devtools::install_github('ans4013/ScisorWiz',build_vignettes = FALSE)
+devtools::install_github('ans4013/ScisorWiz',build_vignettes = TRUE)
 ```
 
 ## Workflow
