@@ -136,7 +136,7 @@ for line in allInfo:
     columns = line.strip().split()
     if geneID in columns[1]:
         readID = columns[2] + ":" + columns[3] + ":" + columns[0]
-        if len(columns) > 9:
+        if len(columns) >= 9:
             exonChain = columns[8].split(";%;")
         else:
             exonChain = columns[6].split(";%;")
