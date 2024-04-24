@@ -368,7 +368,7 @@ for cType in cellType:
     # Search for cellType matches throughout geneIDMatch array
     for line in geneIDMatch:
         ID = line[9]
-        if cType[0] in ID:
+	    if all([x in ID for x in cType[0].split("::")]): #flexible biccn nomenclature
             for i in remap:
 		# Only interested in exonic sections
                 if "exonic" in i[3]:
